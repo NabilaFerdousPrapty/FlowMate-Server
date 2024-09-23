@@ -37,6 +37,18 @@ const UsersCollections= client.db("FlowMateDB").collection("Users");
 
 async function dbConnect() {
     try {
+        // post the users data from client side to server side
+        app.post('/users', async (req, res) => {
+            const query = req.body
+            const result = await UsersCollections.insertOne(query)
+            res.send(result)
+        })
+        // get the all users from server to client side
+        app.get('/users', async (req, res) => {
+            const query = req.body
+            const result = await UsersCollections.find(query).toArray()
+            res.send(result)
+        })
         // await client.db('admin').command({ ping: 1 })
         console.log('You successfully connected to MongoDB!')
     } catch (err) {
