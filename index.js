@@ -39,10 +39,17 @@ async function dbConnect() {
     try {
         // post the users data from client side to server side
         app.post('/users', async (req, res) => {
-            const query = req.body
-            const result = await UsersCollections.insertOne(query)
-            res.send(result)
-        })
+            const newUser = req.body;
+            const query = { email: newUser.email };
+            const existingUser = await UsersCollections.findOne(query);
+            if (existingUser) {
+                res.send({ message: "User already exists", insertedId: null })
+                return
+        
+            }
+            const result = await UsersCollections.insertOne(newUser);
+            res.send(result);
+        });
         // get the all users from server to client side
         app.get('/users', async (req, res) => {
             const query = req.body
