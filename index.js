@@ -7,7 +7,6 @@ import { errorHandler, routeNotFound } from "./middlewares/errorMiddlewaves.js";
 import routes from "./routes/index.js";
 import { dbConnection } from "./utils/index.js";
 
-dotenv.config();
 
 dbConnection();
 
