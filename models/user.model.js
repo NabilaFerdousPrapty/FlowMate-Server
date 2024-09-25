@@ -29,6 +29,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       default: false,
     },
+
+    imageUrl: {
+      type: String,
+    },
+
     tasks: [
       {
         type: mongoose.Schema.Types.ObjectId,
