@@ -58,7 +58,7 @@ export const duplicateTask = async (req, res) => {
 
 export const postTaskActivity = async (req, res) => {
     try {
-
+        const {id} = req.params
     } catch (error) { 
 
         console.log(error)
