@@ -43,6 +43,12 @@ export const duplicateTask = async (req, res) => {
             title: task.title + " - Duplicate"
         })
         newTask.team = task.team
+        newTask.subTasks = task.subTasks
+        newTask.assets = task.assets
+        newTask.priority = task.priority
+        newTask.stage = task.stage
+
+        await newTask.save()
     }catch (error) { 
 
         console.log(error)
