@@ -1,9 +1,9 @@
 import express from "express";
-import { duplicateTask } from "../controllers/taskController";
+import { duplicateTask, postTaskActivity } from "../controllers/taskController";
 const router = express.Router();
 
 router.post('/create', protectRoute, isAdminRoute, createTask)
 router.post('/duplicate/:id',protectRoute,isAdminRoute,duplicateTask)
-router.post('activity/:id')
+router.post('activity/:id', protectRoute, postTaskActivity)
 
 export default router;
