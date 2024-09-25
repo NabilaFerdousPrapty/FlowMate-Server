@@ -1,6 +1,4 @@
-import { type } from "express/lib/response";
-import { Schema } from "mongoose";
-import { title } from "process";
+import mongoose, { Schema } from "mongoose";
 
 const taskSchema = new Schema(
   {
@@ -21,46 +19,45 @@ const taskSchema = new Schema(
       enum: ["low", "normal", "medium", "high", "urgent"],
       default: "normal",
     },
-
     stage: {
       type: String,
       enum: ["todo", "in progress", "done"],
       default: "todo",
     },
-
-    activities: {
-      type: {
-        type: String,
-        default: "assigned",
-        enum: [
-          "assigned",
-          "started",
-          "in progress",
-          "bug",
-          "completed",
-          "commented",
-          "reopened",
-        ],
+    activities: [
+      {
+        type: {
+          type: String,
+          default: "assigned",
+          enum: [
+            "assigned",
+            "started",
+            "in progress",
+            "bug",
+            "completed",
+            "commented",
+            "reopened",
+          ],
+        },
+        activity: {
+          type: String,
+        },
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+        by: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
       },
-      activity: {
-        type: String,
-        date: Date,
-        default: new Date(),
-      },
-      by: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-    },
-
+    ],
     subtasks: [
       {
-        title: {
-          type: String,
-          date: Date,
-          tag: String,
-        },
+        title: String,
+        date: Date,
+        tag: String,
       },
     ],
     assets: [String],
