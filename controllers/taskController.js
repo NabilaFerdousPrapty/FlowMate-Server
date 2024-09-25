@@ -40,8 +40,9 @@ export const duplicateTask = async (req, res) => {
 
         const newTask = await Task.create({
             ...task,
-            title: task.title + "Duplicate"
+            title: task.title + " - Duplicate"
         })
+        newTask.team = task.team
     }catch (error) { 
 
         console.log(error)
