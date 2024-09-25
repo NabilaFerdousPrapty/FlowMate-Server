@@ -1,6 +1,4 @@
-import { type } from "express/lib/response";
-import { Schema } from "mongoose";
-import { title } from "process";
+import mongoose, { Schema } from "mongoose";
 
 const taskSchema = new Schema(
   {
@@ -54,7 +52,7 @@ const taskSchema = new Schema(
       },
     },
 
-    subtasks: [
+    subTasks: [
       {
         title: {
           type: String,
