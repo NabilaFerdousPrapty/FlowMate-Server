@@ -32,4 +32,4 @@ async function showCollectionDocuments(collectionName) {
 }
 
 // Run the function and pass the name of the collection you want to view
-showCollectionDocuments("task"); // Replace 'yourCollectionName' with the actual collection name
+showCollectionDocuments("users"); // Replace 'yourCollectionName' with the actual collection name
