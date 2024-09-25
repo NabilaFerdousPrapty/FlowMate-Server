@@ -60,6 +60,7 @@ export const postTaskActivity = async (req, res) => {
     try {
         const {id} = req.params
         const {userId} = req.user
+        const {type, activity} = req.body
     } catch (error) { 
 
         console.log(error)
