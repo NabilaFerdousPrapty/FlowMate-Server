@@ -1,5 +1,5 @@
 import express from "express";
-import { duplicateTask, postTaskActivity } from "../controllers/taskController";
+import { createTask, duplicateTask, postTaskActivity } from "../controllers/taskController";
 const router = express.Router();
 
 router.post('/create', protectRoute, isAdminRoute, createTask)
