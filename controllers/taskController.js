@@ -31,3 +31,20 @@ export const createTask = async (req, res) => {
     }
    
 }
+
+export const duplicateTask = async (req, res) => {
+    try {
+        const {id} = req.params
+
+        const task = await Task.findById(id)
+
+        const newTask = await Task.create({
+            ...task,
+            
+        })
+    }catch (error) { 
+
+        console.log(error)
+        return res.status(400).json({status: false, message: error.message})
+    }
+}
