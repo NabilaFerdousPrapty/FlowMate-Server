@@ -5,7 +5,7 @@ import Notice from "../models/notification.model.js";
 
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, isAdmin, role, title } = req.body;
+    const { name, email, password, isAdmin, role, title,imageUrl } = req.body;
 
     const userExist = await User.findOne({ email });
 
@@ -23,6 +23,8 @@ export const registerUser = async (req, res) => {
       isAdmin,
       role,
       title,
+      imageUrl,
+
     });
 
     if (user) {
