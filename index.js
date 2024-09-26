@@ -7,7 +7,7 @@ import { errorHandler, routeNotFound } from "./middlewares/errorMiddlewaves.js";
 import routes from "./routes/index.js";
 import { dbConnection } from "./utils/index.js";
 
-
+dotenv.config();
 dbConnection();
 
 const PORT = process.env.PORT || 5000;
@@ -16,11 +16,16 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["*"],
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5174',
+    
+    ],
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
   })
 );
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
