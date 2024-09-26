@@ -34,4 +34,4 @@ export const isAdminRoute = (req, res, next) => {
   }
 };
 
-export { isAdminRoute, protectRoute };
+
