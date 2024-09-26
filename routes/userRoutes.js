@@ -14,6 +14,8 @@ import {
   activateUserProfile,
 } from "../controllers/userController.js";
 
+import { createPayment } from "../controllers/paymentController.js";
+
 const router = express.Router();
 
 router.post("/register", registerUser);
@@ -27,7 +29,9 @@ router.put("/profile", protectRoute, updateUserProfile);
 router.put("/read-noti", protectRoute, markNotificationRead);
 router.put("/change-password", protectRoute, changeUserPassword);
 
-// //   FOR ADMIN ONLY - ADMIN ROUTES
+router.post("/payment", protectRoute, createPayment);
+
+//   FOR ADMIN ONLY - ADMIN ROUTES
 router
   .route("/:id")
   .put(protectRoute, isAdminRoute, activateUserProfile)

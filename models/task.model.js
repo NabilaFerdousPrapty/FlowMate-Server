@@ -19,45 +19,46 @@ const taskSchema = new Schema(
       enum: ["low", "normal", "medium", "high", "urgent"],
       default: "normal",
     },
+
     stage: {
       type: String,
       enum: ["todo", "in progress", "done"],
       default: "todo",
     },
-    activities: [
-      {
-        type: {
-          type: String,
-          default: "assigned",
-          enum: [
-            "assigned",
-            "started",
-            "in progress",
-            "bug",
-            "completed",
-            "commented",
-            "reopened",
-          ],
-        },
-        activity: {
-          type: String,
-        },
-        date: {
-          type: Date,
-          default: Date.now,
-        },
-        by: {
-          type: Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
+
+    activities: {
+      type: {
+        type: String,
+        default: "assigned",
+        enum: [
+          "assigned",
+          "started",
+          "in progress",
+          "bug",
+          "completed",
+          "commented",
+          "reopened",
+        ],
       },
-    ],
-    subtasks: [
-      {
-        title: String,
+      activity: {
+        type: String,
         date: Date,
-        tag: String,
+        default: new Date(),
+      },
+      by: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
+    },
+
+    subTasks: [
+      {
+        title: {
+          type: String,
+          date: Date,
+          tag: String,
+        },
       },
     ],
     assets: [String],
