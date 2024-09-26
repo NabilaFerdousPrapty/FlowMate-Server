@@ -1,4 +1,5 @@
 import express from "express";
+
 import {
   createSubTask,
   createTask,
@@ -13,11 +14,15 @@ import {
 } from "../controllers/taskController.js";
 import { isAdminRoute, protectRoute } from "../middlewares/authMiddlewave.js";
 
+
 const router = express.Router();
 
 router.post("/create", protectRoute, isAdminRoute, createTask);
 router.post("/duplicate/:id", protectRoute, isAdminRoute, duplicateTask);
 router.post("/activity/:id", protectRoute, postTaskActivity);
+
+
+export default router;
 
 router.get("/dashboard", protectRoute, dashboardStatistics);
 router.get("/", protectRoute, getTasks);

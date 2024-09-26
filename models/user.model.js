@@ -29,6 +29,11 @@ const userSchema = new mongoose.Schema(
       required: true,
       default: false,
     },
+
+    imageUrl: {
+      type: String,
+    },
+
     tasks: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -57,7 +62,7 @@ userSchema.pre("save", async function (next) {
     next();
   }
   const salt = await bcrypt.genSalt(10);
-  this.password = bcrypt.hash(this.password, salt);
+  this.password = await bcrypt.hash(this.password, salt); // This line is used to hash the password before saving it to the database
   next();
 });
 
