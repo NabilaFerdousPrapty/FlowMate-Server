@@ -20,6 +20,7 @@ app.use(
       'http://localhost:5173',
       'http://localhost:5174',
       'https://flowmate-letscollaborate.web.app/',
+      'https://flowmate-letscollaborate.firebaseapp.com/'
       
     
     ],
