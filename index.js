@@ -8,7 +8,6 @@ import routes from "./routes/index.js";
 import { dbConnection } from "./utils/index.js";
 
 dotenv.config();
-
 dbConnection();
 
 const PORT = process.env.PORT || 5000;
@@ -17,11 +16,20 @@ const app = express();
 
 app.use(
   cors({
-    origin: ["*", "http://localhost:5173"],
+  
+    origin: [
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'https://flowmate-letscollaborate.web.app/',
+      
+    
+    ],
+
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
   })
 );
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

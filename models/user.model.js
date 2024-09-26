@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      required: true,
+      required: false,
     },
     role: {
       type: String,
@@ -45,6 +45,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       default: true,
     },
+    imageUrl: {
+      type: String,
+     
+      
+
+    }
   },
   {
     timestamps: true,
