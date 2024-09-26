@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 
-export const protectRoute = async (req, res, next) => {
+const protectRoute = async (req, res, next) => {
   try {
     let token = req.cookies.token;
 
@@ -23,7 +23,7 @@ export const protectRoute = async (req, res, next) => {
   }
 };
 
-export const isAdminRoute = (req, res, next) => {
+const isAdminRoute = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();
   } else {
@@ -34,4 +34,4 @@ export const isAdminRoute = (req, res, next) => {
   }
 };
 
-
+export { isAdminRoute, protectRoute };
