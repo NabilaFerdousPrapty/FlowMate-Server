@@ -13,11 +13,15 @@ import {
   deleteUserProfile,
   activateUserProfile,
 } from "../controllers/userController.js";
+import Stripe from "stripe";
 
-import { createPayment } from "../controllers/paymentController.js";
+import {
+  checkoutSession,
+  createPayment,
+} from "../controllers/paymentController.js";
 
 const router = express.Router();
-
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
@@ -31,10 +35,11 @@ router.put("/change-password", protectRoute, changeUserPassword);
 
 router.post("/payment", protectRoute, createPayment);
 
+router.use("/create-checkout-session", checkoutSession);
+
 //   FOR ADMIN ONLY - ADMIN ROUTES
 router
   .route("/:id")
   .put(protectRoute, isAdminRoute, activateUserProfile)
   .delete(protectRoute, isAdminRoute, deleteUserProfile);
-
 export default router;
