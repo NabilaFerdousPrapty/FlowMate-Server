@@ -1,19 +1,40 @@
-import Payment from "../models/payment.model.js";
+const paymentsCollection = require("../models/paymentModel");
+const stripe = require("stripe")(process.env.Payment_Api_Key);
 
-export const createPayment = async (req, res) => {
+exports.createPaymentIntent = async (req, res) => {
   try {
-    const { user, paymentMethod, amount, plan } = req.body;
-
-    const payment = await Payment.create({
-      user,
-      paymentMethod,
+    const { price } = req.body;
+    const amount = parseInt(price * 100);
+    const paymentIntent = await stripe.paymentIntents.create({
       amount,
-      plan,
+      payment_method_types: ["card"],
+      currency: "usd",
     });
 
-    res.status(201).json(payment);
+    res.send({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({ status: false, message: error.message });
+    console.error("Error creating payment intent:", error);
+    res.status(500).send({ message: "Failed to create payment intent" });
+  }
+};
+
+exports.processPayment = async (req, res) => {
+  try {
+    const payment = req.body;
+    const result = await paymentsCollection.insertOne(payment);
+    res.send(result);
+  } catch (error) {
+    console.error("Error processing payment:", error);
+    res.status(500).send({ message: "Failed to process payment" });
+  }
+};
+
+exports.getPayments = async (req, res) => {
+  try {
+    const result = await paymentsCollection.find().toArray();
+    res.send(result);
+  } catch (error) {
+    console.error("Error fetching payments:", error);
+    res.status(500).send({ message: "Failed to fetch payments" });
   }
 };
