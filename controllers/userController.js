@@ -5,11 +5,11 @@ exports.createUser = async (req, res) => {
     const query = req.body;
     const email = query?.email;
     const isExiting = await usersCollection.findOne({ email });
-    
+
     if (isExiting) {
       return res.status(400).send({ message: "User already exists" });
     }
-    
+
     const result = await usersCollection.insertOne(query);
     res.send(result);
   } catch (error) {

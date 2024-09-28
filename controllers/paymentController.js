@@ -1,24 +1,25 @@
-const paymentsCollection = require("../models/paymentModel");
-const stripe = require("stripe")(process.env.Payment_Api_Key);
+const stripe = require('stripe')(process.env.Payment_Api_Key); // Import and initialize Stripe
+const { db } = require("../utils/db"); 
+const paymentsCollection = db.collection("payments"); 
 
 exports.createPaymentIntent = async (req, res) => {
   try {
     const { price } = req.body;
-    const amount = parseInt(price * 100);
+    const amount = parseInt(price * 100); // Convert price to cents
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
-      payment_method_types: ["card"],
       currency: "usd",
+      payment_method_types: ["card"],
     });
-
+    console.log("Payment Intent Created:", paymentIntent);
     res.send({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
-    console.error("Error creating payment intent:", error);
-    res.status(500).send({ message: "Failed to create payment intent" });
+    console.error("Error creating payment intent:", error); // Add detailed logging
+    res.status(500).send({ message: "Failed to create payment intent", error });
   }
 };
 
-exports.processPayment = async (req, res) => {
+exports.createPayment = async (req, res) => {
   try {
     const payment = req.body;
     const result = await paymentsCollection.insertOne(payment);
@@ -34,7 +35,7 @@ exports.getPayments = async (req, res) => {
     const result = await paymentsCollection.find().toArray();
     res.send(result);
   } catch (error) {
-    console.error("Error fetching payments:", error);
-    res.status(500).send({ message: "Failed to fetch payments" });
+    console.error("Error fetching payment history:", error);
+    res.status(500).send({ message: "Failed to fetch payment history" });
   }
 };
