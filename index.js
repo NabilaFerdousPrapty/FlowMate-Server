@@ -24,7 +24,7 @@ app.use(
 );
 
 app.use("/payments", paymentRoutes);
-app.use("/members", memberRoutes);
+app.use("/team", memberRoutes);
 app.use("/contacts", contactRoutes);
 app.use("/users", userRoutes);
 
