@@ -3,8 +3,13 @@ const { createMember, getMembers, deleteMember } = require("../controllers/membe
 
 const router = express.Router();
 
-router.post("/", createMember);
-router.get("/", getMembers);
-router.delete("/:id", deleteMember);
+// Create a new member
+router.post("/create-member", createMember);
+
+// Get all members
+router.get("/members", getMembers);
+
+// Delete a member
+router.delete("/member/:id", deleteMember);
 
 module.exports = router;
