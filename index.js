@@ -63,7 +63,8 @@ app.get('/create-team/role/:role', async (req, res) => {
 app.get('/team/:teamName', async (req, res) => {
     const query = req.params.teamName
     if(query) {
-      
+      const result = await createTeamCollection.findOne({teamName:query}).toArray()
+      res.send(result)
     }
 })
 connectDB();
