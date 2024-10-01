@@ -43,6 +43,7 @@ app.get('/create-team', async (req, res) => {
   }
   
 })
+// delete the team by team admin
 app.delete('/create-team/:id', async (req, res) => {
   const id = req.params.id
   const query = {_id: new ObjectId(id)}
@@ -51,6 +52,7 @@ app.delete('/create-team/:id', async (req, res) => {
     res.send(result)
   }
 })
+// get the team collection team role
 app.get('/create-team/role/:role', async (req, res) => {
   const role = req.params.role
   const email = req.query.email
@@ -59,14 +61,17 @@ app.get('/create-team/role/:role', async (req, res) => {
     res.send(result)
   }
 })
-
+// get the team data by team name wise
 app.get('/team/:teamName', async (req, res) => {
-    const query = req.params.teamName
-    if(query) {
-      const result = await createTeamCollection.findOne({teamName:query}).toArray()
-      res.send(result)
-    }
-})
+  const query = req.params.teamName;
+  if(query) {
+    const result = await createTeamCollection.findOne({ teamName: query });
+    res.send(result);
+  } else {
+    res.status(400).send({ message: 'Team name is required' });
+  }
+});
+
 connectDB();
 app.get("/", (req, res) => {
   res.send("FlowMate is here to help you collaborate with your team!");
