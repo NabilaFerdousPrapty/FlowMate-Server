@@ -61,7 +61,10 @@ app.get('/create-team/role/:role', async (req, res) => {
 })
 
 app.get('/team/:teamName', async (req, res) => {
-
+    const query = req.params.teamName
+    if(query) {
+      
+    }
 })
 connectDB();
 app.get("/", (req, res) => {
