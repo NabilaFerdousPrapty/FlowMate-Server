@@ -60,7 +60,9 @@ app.get('/create-team/role/:role', async (req, res) => {
   }
 })
 
+app.get('/team/:teamName', async (req, res) => {
 
+})
 connectDB();
 app.get("/", (req, res) => {
   res.send("FlowMate is here to help you collaborate with your team!");
