@@ -5,6 +5,9 @@ const memberRoutes = require("./routes/memberRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const userRoutes = require("./routes/userRoutes");
+
+const createTaskRoutes = require('./routes/createTaskRoutes');
+
 const { ObjectId } = require("mongodb");
 
 const app = express();
@@ -28,6 +31,8 @@ app.use("/payments", paymentRoutes);
 app.use("/team", memberRoutes);
 app.use("/contacts", contactRoutes);
 app.use("/users", userRoutes);
+app.use("/createTask", createTaskRoutes);
+
 
 app.post('/create-team', async (req, res) => {
   const query = req.body
