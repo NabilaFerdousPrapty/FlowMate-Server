@@ -110,9 +110,9 @@ app.post("/team/:id/add-member", async (req, res) => {
 });
 // get the team members by email address
 app.get('/members', async (req, res) => {
-  const query = req.query.email
-  if(query) {
-    const result = await createTeamCollection.find({ email: query}).toArray();
+  const email = req.query.email
+  if(email) {
+    const result = await createTeamCollection.find({ email: email}).toArray();
     res.send(result);
   }
 })
