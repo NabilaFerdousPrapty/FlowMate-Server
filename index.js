@@ -74,6 +74,7 @@ app.get('/team/:teamName', async (req, res) => {
     res.status(400).send({ message: 'Team name is required' });
   }
 });
+// search the users for add team members
 app.get('/search', async (req, res) => {
   const name = req.query.name;
   if(name) {
@@ -107,6 +108,14 @@ app.post("/team/:id/add-member", async (req, res) => {
     res.status(500).json({ message: "Failed to add member", error });
   }
 });
+// get the team members by email address
+app.get('/members', async (req, res) => {
+  const query = req.query.email
+  if(query) {
+    const result = await createTeamCollection.find({ email: query}).toArray();
+    res.send(result);
+  }
+})
 app.get('/teams', async (req, res) => {
   const result = await createTeamCollection.find().toArray();
   res.send(result);
