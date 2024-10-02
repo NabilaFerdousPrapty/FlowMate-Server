@@ -162,7 +162,7 @@ app.get('/members', async (req, res) => {
   }
 });
 
-// Get all teams
+// Get all teams members
 app.get('/teams', async (req, res) => {
   try {
     const result = await createTeamCollection.find().toArray();
