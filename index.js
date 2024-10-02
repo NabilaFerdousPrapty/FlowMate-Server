@@ -5,6 +5,7 @@ const memberRoutes = require("./routes/memberRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const userRoutes = require("./routes/userRoutes");
+const createTaskRoutes = require('./routes/createTaskRoutes');
 const { ObjectId } = require("mongodb");
 
 const app = express();
@@ -26,12 +27,14 @@ app.use(
 
 const createTeamCollection = db.collection('create-team');
 const usersCollection = db.collection("Users");
+const feedbacksCollection = db.collection("feedbacks");
 
 // Middleware for routes
 app.use("/payments", paymentRoutes);
 app.use("/team", memberRoutes);
 app.use("/contacts", contactRoutes);
 app.use("/users", userRoutes);
+app.use("/createTask", createTaskRoutes);
 
 // Create a new team
 app.post('/create-team', async (req, res) => {
@@ -169,6 +172,48 @@ app.get('/teams', async (req, res) => {
     res.send(result);
   } catch (error) {
     res.status(500).send({ message: "Failed to retrieve teams", error });
+  }
+});
+
+// Feedback routes
+app.post("/feedback", async (req, res) => {
+  try {
+    const { rating, feedback } = req.body;
+    const userEmail = req.query.email;
+
+    if (userEmail) {
+      // Find user by email
+      const user = await usersCollection.findOne({ email: userEmail });
+
+      if (user) {
+        const result = await feedbacksCollection.insertOne({
+          userId: user._id,
+          name: user.name,
+          image: user.photo,
+          rating: rating,
+          feedback: feedback,
+          createdAt: new Date(),
+        });
+        res.send(result);
+      } else {
+        res.status(404).send({ message: "User not found" });
+      }
+    } else {
+      res.status(400).send({ message: "User email is required" });
+    }
+  } catch (error) {
+    console.error("Error posting feedback:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+});
+
+app.get("/feedbacks", async (req, res) => {
+  try {
+    const feedbacks = await feedbacksCollection.find().toArray();
+    res.send(feedbacks);
+  } catch (error) {
+    console.error("Error fetching feedbacks:", error);
+    res.status(500).send({ message: "Internal server error" });
   }
 });
 
