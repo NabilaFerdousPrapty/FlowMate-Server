@@ -83,8 +83,33 @@ app.get('/search', async (req, res) => {
     res.send(result);
   }
 })
-app.get('/', async (req, res) => {
-  res.send('text')
+// Add a new member to a specific team
+app.post("/team/:id/add-member", async (req, res) => {
+  const { id } = req.params;
+  const {teamId, displayName, email, role, photo, uid } = req.body;
+
+  try {
+    const team = await createTeamCollection.findOne({ _id: new ObjectId(id) });
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    const newMember = {teamId, displayName, email, role, photo, uid };
+    team.members = team.members || [];
+    team.members.push(newMember);
+    const result = await createTeamCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { members: team.members } }
+    );
+
+    res.status(200).json({ message: "Member added successfully", result });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to add member", error });
+  }
+});
+app.get('/teams', async (req, res) => {
+  const result = await createTeamCollection.find().toArray();
+  res.send(result);
 })
 connectDB();
 app.get("/", (req, res) => {
