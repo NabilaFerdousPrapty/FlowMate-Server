@@ -11,12 +11,15 @@ exports.createTeam = async (req, res) => {
   }
 };
 
-exports.getTeam = async (req, res) => {
+exports.getTeamByEmail = async (req, res) => {
   try {
-    const result = await createTeamCollection.find().toArray();
-    res.send(result);
+    const email = req.query.email
+    if(email) {
+      const result = await createTeamCollection.find({email: email}).toArray()
+      res.send(result)
+    }
   } catch (error) {
-    console.error("Error fetching contacts:", error);
-    res.status(500).send({ message: "Failed to fetch contacts" });
+    console.error("Error fetching getTeamByEmail:", error);
+    res.status(500).send({ message: "Failed to fetch getTeamByEmail" });
   }
 };
