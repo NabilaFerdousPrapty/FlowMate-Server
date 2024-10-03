@@ -150,12 +150,12 @@ app.post("/team/:id/add-member", async (req, res) => {
 // Get team members by email
 app.get('/members', async (req, res) => {
   try {
-    const email = req.query.email;
-    if (email) {
-      const result = await createTeamCollection.find({ email }).toArray();
+    const teamName = req.query.teamName;
+    if (teamName) {
+      const result = await createTeamCollection.find({ teamName }).toArray();
       res.send(result);
     } else {
-      res.status(400).send({ message: "Email is required" });
+      res.status(400).send({ message: "Team Name is required" });
     }
   } catch (error) {
     res.status(500).send({ message: "Failed to retrieve members", error });
