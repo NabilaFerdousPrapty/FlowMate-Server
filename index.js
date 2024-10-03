@@ -52,7 +52,12 @@ app.get('/create-team', async (req, res) => {
   try {
     const email = req.query.email;
     if (email) {
-      const result = await createTeamCollection.find({ email }).toArray();
+      const result = await createTeamCollection.find({
+        $or: [
+          { email }, 
+          { "members.email": email }
+        ]
+      }).toArray();
       res.send(result);
     } else {
       res.status(400).send({ message: "Email is required" });
@@ -61,6 +66,7 @@ app.get('/create-team', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error });
   }
 });
+
 
 // Delete a team by team admin
 app.delete('/create-team/:id', async (req, res) => {
