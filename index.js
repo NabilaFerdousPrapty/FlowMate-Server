@@ -128,15 +128,18 @@ app.get('/search', async (req, res) => {
 // Add a new member to a specific team
 app.post("/team/:id/add-member", async (req, res) => {
   const { id } = req.params;
-  const { teamId, displayName, email, role, photo, uid } = req.body;
+  const { teamId, displayName, email, role, photo, uid,status } = req.body;
 
   try {
     const team = await createTeamCollection.findOne({ _id: new ObjectId(id) });
     if (!team) {
       return res.status(404).json({ message: "Team not found" });
     }
-
-    const newMember = { teamId, displayName, email, role, photo, uid };
+    const isExiting = await team.members?.some(member => member.email === email)
+    if(isExiting) {
+      return res.status(400).json({ message: "Member with this email already exists in the team" });
+    }
+    const newMember = { teamId, displayName, email, role, photo, uid,status };
     team.members = team.members || [];
     team.members.push(newMember);
     const result = await createTeamCollection.updateOne(
