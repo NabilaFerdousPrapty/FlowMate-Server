@@ -173,6 +173,32 @@ app.get('/members', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve members", error });
   }
 });
+// delete members from team
+app.delete('/members/:teamId/:memberId', async (req, res) => {
+  const { teamId, memberId } = req.params;
+
+  try {
+    const query = { _id: new ObjectId(teamId) };
+
+    // Remove the member from the team by _id
+    const result = await createTeamCollection.updateOne(
+      query,
+      {
+        $pull: {
+          members: { _id: memberId }
+        }
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: "Member not found or team does not exist" });
+    }
+
+    res.status(200).json({ message: "Member deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete member", error });
+  }
+});
 
 // Get all teams members
 app.get('/teams', async (req, res) => {
