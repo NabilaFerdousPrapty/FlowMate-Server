@@ -20,7 +20,7 @@ app.use(
       "http://localhost:5174",
       "https://flowmate-letscollaborate.web.app",
     ],
-    methods: ["GET", "POST", "DELETE", "PUT"],
+    methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
     credentials: true,
   })
 );
