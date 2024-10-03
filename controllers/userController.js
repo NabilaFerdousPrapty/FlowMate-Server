@@ -7,7 +7,7 @@ exports.createUser = async (req, res) => {
     const isExiting = await usersCollection.findOne({ email });
 
     if (isExiting) {
-      return res.status(400).send({ message: "User already exists" });
+      return res.send({ message: "User already exists" });
     }
 
     const result = await usersCollection.insertOne(query);
@@ -17,9 +17,9 @@ exports.createUser = async (req, res) => {
     res.status(500).send({ message: "Failed to create user" });
   }
 };
-
 exports.getUsers = async (req, res) => {
   try {
+
     const result = await usersCollection.find().toArray();
     res.send(result);
   } catch (error) {
