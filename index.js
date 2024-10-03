@@ -35,6 +35,18 @@ app.use("/team", memberRoutes);
 app.use("/contacts", contactRoutes);
 app.use("/users", userRoutes);
 app.use("/createTask", createTaskRoutes);
+//check if user is admin
+app.get('/users/admin/:email',  async (req, res) => {
+  const email = req.params.email;
+ 
+  const query = { email: email };
+  const user = await usersCollection.findOne(query);
+  let admin = false;
+  if (user) {
+    admin = user?.role === 'admin';
+  }
+  res.send({ admin });
+})
 
 // Create a new team
 app.post('/create-team', async (req, res) => {
