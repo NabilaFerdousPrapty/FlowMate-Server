@@ -64,7 +64,12 @@ app.get('/create-team', async (req, res) => {
   try {
     const email = req.query.email;
     if (email) {
-      const result = await createTeamCollection.find({ email }).toArray();
+      const result = await createTeamCollection.find({
+        $or: [
+          { email }, 
+          { "members.email": email }
+        ]
+      }).toArray();
       res.send(result);
     } else {
       res.status(400).send({ message: "Email is required" });
@@ -73,6 +78,7 @@ app.get('/create-team', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error });
   }
 });
+
 
 // Delete a team by team admin
 app.delete('/create-team/:id', async (req, res) => {
@@ -140,15 +146,18 @@ app.get('/search', async (req, res) => {
 // Add a new member to a specific team
 app.post("/team/:id/add-member", async (req, res) => {
   const { id } = req.params;
-  const { teamId, displayName, email, role, photo, uid } = req.body;
+  const {_id, teamId, displayName, email, role, photo, uid,status } = req.body;
 
   try {
     const team = await createTeamCollection.findOne({ _id: new ObjectId(id) });
     if (!team) {
       return res.status(404).json({ message: "Team not found" });
     }
-
-    const newMember = { teamId, displayName, email, role, photo, uid };
+    const isExiting = await team.members?.some(member => member.email === email)
+    if(isExiting) {
+      return res.status(400).json({ message: "Member with this email already exists in the team" });
+    }
+    const newMember = {_id, teamId, displayName, email, role, photo, uid,status };
     team.members = team.members || [];
     team.members.push(newMember);
     const result = await createTeamCollection.updateOne(
@@ -165,19 +174,45 @@ app.post("/team/:id/add-member", async (req, res) => {
 // Get team members by email
 app.get('/members', async (req, res) => {
   try {
-    const email = req.query.email;
-    if (email) {
-      const result = await createTeamCollection.find({ email }).toArray();
+    const teamName = req.query.teamName;
+    if (teamName) {
+      const result = await createTeamCollection.find({ teamName }).toArray();
       res.send(result);
     } else {
-      res.status(400).send({ message: "Email is required" });
+      res.status(400).send({ message: "Team Name is required" });
     }
   } catch (error) {
     res.status(500).send({ message: "Failed to retrieve members", error });
   }
 });
+// delete members from team
+app.delete('/members/:teamId/:memberId', async (req, res) => {
+  const { teamId, memberId } = req.params;
 
-// Get all teams
+  try {
+    const query = { _id: new ObjectId(teamId) };
+
+    // Remove the member from the team by _id
+    const result = await createTeamCollection.updateOne(
+      query,
+      {
+        $pull: {
+          members: { _id: memberId }
+        }
+      }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: "Member not found or team does not exist" });
+    }
+
+    res.status(200).json({ message: "Member deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete member", error });
+  }
+});
+
+// Get all teams members
 app.get('/teams', async (req, res) => {
   try {
     const result = await createTeamCollection.find().toArray();
@@ -186,7 +221,6 @@ app.get('/teams', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error });
   }
 });
-
 // Feedback routes
 app.post("/feedback", async (req, res) => {
   try {
