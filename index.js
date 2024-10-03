@@ -174,7 +174,6 @@ app.get('/teams', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error });
   }
 });
-
 // Feedback routes
 app.post("/feedback", async (req, res) => {
   try {
