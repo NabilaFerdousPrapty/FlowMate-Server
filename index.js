@@ -28,6 +28,7 @@ app.use(
 const createTeamCollection = db.collection('create-team');
 const usersCollection = db.collection("Users");
 const feedbacksCollection = db.collection("feedbacks");
+const newslettersCollection = db.collection("newsletters");
 
 // Middleware for routes
 app.use("/payments", paymentRoutes);
@@ -35,6 +36,18 @@ app.use("/team", memberRoutes);
 app.use("/contacts", contactRoutes);
 app.use("/users", userRoutes);
 app.use("/createTask", createTaskRoutes);
+//check if user is admin
+app.get('/users/admin/:email',  async (req, res) => {
+  const email = req.params.email;
+ 
+  const query = { email: email };
+  const user = await usersCollection.findOne(query);
+  let admin = false;
+  if (user) {
+    admin = user?.role === 'admin';
+  }
+  res.send({ admin });
+})
 
 // Create a new team
 app.post('/create-team', async (req, res) => {
@@ -66,6 +79,30 @@ app.get('/create-team', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error });
   }
 });
+//newsletter
+app.post("/newsletter", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Check if the email already exists
+    const existingSubscriber = await newslettersCollection.findOne({ email });
+    if (existingSubscriber) {
+      return res.send({ message: "You have already been subscribed to our newsletter" });
+    }
+
+    // Insert new subscriber
+    const result = await newslettersCollection.insertOne({
+      email,
+      createdAt: new Date(),
+    });
+
+    res.send({ message: "Subscribed", result });
+  } catch (error) {
+    console.error("Error posting newsletter:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+});
+
 
 
 // Delete a team by team admin
