@@ -196,7 +196,7 @@ app.delete('/members/:teamId/:memberId', async (req, res) => {
 
     res.status(200).json({ message: "Member deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete member", error });
+    res.status(500).json({ message: "Failed to delete member please try again", error });
   }
 });
 
