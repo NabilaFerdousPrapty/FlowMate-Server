@@ -28,6 +28,7 @@ app.use(
 const createTeamCollection = db.collection('create-team');
 const usersCollection = db.collection("Users");
 const feedbacksCollection = db.collection("feedbacks");
+const newslettersCollection = db.collection("newsletters");
 
 // Middleware for routes
 app.use("/payments", paymentRoutes);
@@ -78,6 +79,30 @@ app.get('/create-team', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error });
   }
 });
+//newsletter
+app.post("/newsletter", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Check if the email already exists
+    const existingSubscriber = await newslettersCollection.findOne({ email });
+    if (existingSubscriber) {
+      return res.send({ message: "You have already been subscribed to our newsletter" });
+    }
+
+    // Insert new subscriber
+    const result = await newslettersCollection.insertOne({
+      email,
+      createdAt: new Date(),
+    });
+
+    res.send({ message: "Subscribed", result });
+  } catch (error) {
+    console.error("Error posting newsletter:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+});
+
 
 
 // Delete a team by team admin
