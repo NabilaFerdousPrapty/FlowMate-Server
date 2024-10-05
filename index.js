@@ -205,7 +205,11 @@ app.get('/teams', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error });
   }
 });
-
+// edit the team description
+app.put('/teams/:id', async (req, res) => {
+  const id = req.params.id;
+  
+})
 // Feedback routes
 app.post("/feedback", async (req, res) => {
   try {
@@ -257,7 +261,7 @@ app.get('/team-requests', async (req, res) => {
     res.status(500).json({ message: 'Error fetching team requests', error });
   }
 });
-
+// post the team requests
 app.post('/team-requests/accept', async (req, res) => {
   const { teamId, userEmail } = req.body;
 
