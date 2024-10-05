@@ -206,10 +206,36 @@ app.get('/teams', async (req, res) => {
   }
 });
 // edit the team description
+
 app.put('/teams/:id', async (req, res) => {
   const id = req.params.id;
-  
-})
+  const query = { _id: new ObjectId(id) };
+  const { teamName, teamDescription } = req.body;
+
+  if (teamName && teamDescription) {
+    try {
+      const update = {
+        $set: {
+          teamName: teamName,
+          teamDescription: teamDescription,
+        },
+      };
+      
+      const result = await createTeamCollection.updateOne(query, update);
+
+      if (result.modifiedCount > 0) {
+        res.status(200).json({ message: 'Team updated successfully' });
+      } else {
+        res.status(404).json({ message: 'Team not found or no changes made' });
+      }
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating team', error });
+    }
+  } else {
+    res.status(400).json({ message: 'teamName and teamDescription are required' });
+  }
+});
+
 // Feedback routes
 app.post("/feedback", async (req, res) => {
   try {
