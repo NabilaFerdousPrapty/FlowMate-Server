@@ -36,6 +36,29 @@ app.use("/contacts", contactRoutes);
 app.use("/users", userRoutes);
 app.use("/createTask", createTaskRoutes);
 
+// get the users by email address
+
+app.get('/users', async (req, res) => {
+  const email = req.query.email
+  if(email) {
+    const result = await usersCollection.find({email: email}).toArray()
+    res.send(result)
+  }
+})
+// update the users role
+app.patch('/users', async (req, res) => {
+  const email = req.query.email
+  const {role} = req.body
+  if(email && role) {
+    const update = {
+      $set: {
+        role: role,
+      }
+    }
+    const result = await usersCollection.updateOne({email: email}, update)
+    res.send(result)
+  }
+})
 // Create a new team
 app.post('/create-team', async (req, res) => {
   try {
@@ -310,10 +333,10 @@ app.post('/team-requests/accept', async (req, res) => {
     res.status(500).json({ message: 'Error accepting team request', error });
   }
 });
-
+connectDB(); 
 // Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-  connectDB();  // Connect to the database
+  
 });
 
