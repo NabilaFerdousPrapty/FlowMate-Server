@@ -104,7 +104,15 @@ app.post("/newsletter", async (req, res) => {
   }
 });
 
-
+app.get("/newsletters", async (req, res) => {
+  try {
+    const newsletters = await newslettersCollection.find().toArray();
+    res.send(newsletters);
+  } catch (error) {
+    console.error("Error fetching newsletters:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+});
 
 // Delete a team by team admin
 app.delete('/create-team/:id', async (req, res) => {
@@ -296,5 +304,5 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Server running on port in on here ${port}`);
+  console.log(`Server running on port ${port}`);
 });
