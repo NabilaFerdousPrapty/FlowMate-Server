@@ -20,7 +20,7 @@ app.use(
       "http://localhost:5174",
       "https://flowmate-letscollaborate.web.app",
     ],
-    methods: ["GET", "POST", "DELETE", "PUT"],
+    methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
     credentials: true,
   })
 );
@@ -28,7 +28,7 @@ app.use(
 const createTeamCollection = db.collection('create-team');
 const usersCollection = db.collection("Users");
 const feedbacksCollection = db.collection("feedbacks");
-
+const membersCollection = db.collection("members");
 // Middleware for routes
 app.use("/payments", paymentRoutes);
 app.use("/team", memberRoutes);
@@ -154,33 +154,36 @@ app.get('/search', async (req, res) => {
 });
 
 // Add a new member to a specific team
-app.post("/team/:id/add-member", async (req, res) => {
-  const { id } = req.params;
-  const { _id, teamId, displayName, email, role, photo, uid, status } = req.body;
+app.post("/members", async (req, res) => {
+  const { _id, teamId, displayName, email, role, photo, status } = req.body;
 
   try {
-    const team = await createTeamCollection.findOne({ _id: new ObjectId(id) });
-    if (!team) {
-      return res.status(404).json({ message: "Team not found" });
+    const existingMember = await membersCollection.findOne({ email: email.toLowerCase() });
+    if (existingMember) {
+      return res.status(409).send({ message: "The member has already been in the database" });
     }
-    const isExisting = team.members?.some((member) => member.email === email);
-    if (isExisting) {
-      return res.status(400).json({ message: "Member with this email already exists in the team" });
-    }
-    const newMember = { _id, teamId, displayName, email, role, photo, uid, status };
-    team.members = team.members || [];
-    team.members.push(newMember);
-    const result = await createTeamCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { members: team.members } }
-    );
+    const result = await membersCollection.insertOne({
+      _id,
+      teamId,
+      displayName,
+      email: email.toLowerCase(),
+      role,
+      photo,
+      status
+    });
+    res.status(201).send(result);
 
-    res.status(200).json({ message: "Member added successfully", result });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to add member", error });
+  } catch (err) {
+    console.error("Error inserting member:", err);
+    res.status(500).send({ message: "Failed to add member", error: err });
   }
 });
 
+// get all members
+app.get('/members', async (req, res) => {
+  const result = await membersCollection.find().toArray();
+  res.send(result);
+})
 // Get team members by email
 app.get('/members', async (req, res) => {
   try {
