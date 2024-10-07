@@ -7,6 +7,8 @@ const jwt = require("jsonwebtoken");
 exports.createUser = async (req, res) => {
   try {
     const { name, email, password, role, status, photo } = req.body;
+    console.log(req.body);
+    
     const isExiting = await usersCollection.findOne({ email });
 
     if (isExiting) {
