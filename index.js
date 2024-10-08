@@ -9,7 +9,7 @@ const createTaskRoutes = require('./routes/createTaskRoutes');
 const { ObjectId } = require("mongodb");
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 7000;
 
 require("dotenv").config();
 app.use(express.json());
@@ -18,6 +18,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
+      "http://localhost:7000",
       "https://flowmate-letscollaborate.web.app",
       "https://flowmate-letscollaborate.firebaseapp.com",
     ],
@@ -38,9 +39,9 @@ app.use("/contacts", contactRoutes);
 app.use("/users", userRoutes);
 app.use("/createTask", createTaskRoutes);
 //check if user is admin
-app.get('/users/admin/:email',  async (req, res) => {
+app.get('/users/admin/:email', async (req, res) => {
   const email = req.params.email;
- 
+
   const query = { email: email };
   const user = await usersCollection.findOne(query);
   let admin = false;
@@ -68,7 +69,7 @@ app.get('/create-team', async (req, res) => {
     if (email) {
       const result = await createTeamCollection.find({
         $or: [
-          { email }, 
+          { email },
           { "members.email": email }
         ]
       }).toArray();
@@ -104,15 +105,39 @@ app.post("/newsletter", async (req, res) => {
   }
 });
 
+// app.get("/newsletters", async (req, res) => {
+//   try {
+//     const newsletters = await newslettersCollection.find().toArray();
+//     res.send(newsletters);
+//   } catch (error) {
+//     console.error("Error fetching newsletters:", error);
+//     res.status(500).send({ message: "Internal server error" });
+//   }
+// });
+
+
 app.get("/newsletters", async (req, res) => {
   try {
+    // Ensure newslettersCollection is defined
+    if (!newslettersCollection) {
+      throw new Error("newslettersCollection is not initialized");
+    }
+
     const newsletters = await newslettersCollection.find().toArray();
+
+    // If no newsletters found, return a suitable message
+    if (newsletters.length === 0) {
+      return res.status(404).send({ message: "No newsletters found" });
+    }
+
+    // Send the newsletters
     res.send(newsletters);
   } catch (error) {
     console.error("Error fetching newsletters:", error);
     res.status(500).send({ message: "Internal server error" });
   }
 });
+
 
 // Delete a team by team admin
 app.delete('/create-team/:id', async (req, res) => {
@@ -180,7 +205,7 @@ app.get('/search', async (req, res) => {
 // Add a new member to a specific team
 app.post("/team/:id/add-member", async (req, res) => {
   const { id } = req.params;
-  const {_id, teamId, displayName, email, role, photo, uid,status } = req.body;
+  const { _id, teamId, displayName, email, role, photo, uid, status } = req.body;
 
   try {
     const team = await createTeamCollection.findOne({ _id: new ObjectId(id) });
@@ -188,10 +213,10 @@ app.post("/team/:id/add-member", async (req, res) => {
       return res.status(404).json({ message: "Team not found" });
     }
     const isExiting = await team.members?.some(member => member.email === email)
-    if(isExiting) {
+    if (isExiting) {
       return res.status(400).json({ message: "Member with this email already exists in the team" });
     }
-    const newMember = {_id, teamId, displayName, email, role, photo, uid,status };
+    const newMember = { _id, teamId, displayName, email, role, photo, uid, status };
     team.members = team.members || [];
     team.members.push(newMember);
     const result = await createTeamCollection.updateOne(
