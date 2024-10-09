@@ -10,7 +10,7 @@ const createTaskBoardRoutes = require('./routes/createTaskBoardRoutes');
 const { ObjectId } = require("mongodb");
 
 const app = express();
-const port = process.env.PORT || 7000;
+const port = process.env.PORT || 5000;
 
 require("dotenv").config();
 app.use(express.json());
@@ -20,6 +20,7 @@ app.use(
       "http://localhost:5173",
       "http://localhost:5174",
       "http://localhost:7000",
+      "http://localhost:5000",
       "https://flowmate-letscollaborate.web.app",
       "https://flowmate-letscollaborate.firebaseapp.com",
     ],
@@ -151,6 +152,7 @@ app.patch('/create-team/:teamId/accept-member', async (req, res) => {
 });
 
 
+
 // Get the team list
 app.get('/create-team', async (req, res) => {
   try {
@@ -166,7 +168,6 @@ app.get('/create-team', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error: error.message });
   }
 });
-
 //newsletter
 app.post("/newsletter", async (req, res) => {
   try {
@@ -270,7 +271,6 @@ app.get('/team/:teamName', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve team", error });
   }
 });
-
 // Search users for adding team members
 app.get('/search', async (req, res) => {
   try {
@@ -330,7 +330,6 @@ app.delete('/members/:teamId/:memberId', async (req, res) => {
     res.status(500).json({ message: "Failed to delete member", error });
   }
 });
-
 // Get all teams members
 app.get('/teams', async (req, res) => {
   try {
