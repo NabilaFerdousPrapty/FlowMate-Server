@@ -25,6 +25,7 @@ app.use(
       "https://flowmate-letscollaborate.firebaseapp.com",
     ],
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
+    methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
     credentials: true,
   })
 );
@@ -304,7 +305,8 @@ app.get('/members', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve members", error });
   }
 });
-// delete members from team
+
+// Delete members from team
 app.delete('/members/:teamId/:memberId', async (req, res) => {
   const { teamId, memberId } = req.params;
 
@@ -314,11 +316,7 @@ app.delete('/members/:teamId/:memberId', async (req, res) => {
     // Remove the member from the team by _id
     const result = await createTeamCollection.updateOne(
       query,
-      {
-        $pull: {
-          members: { _id: memberId }
-        }
-      }
+      { $pull: { members: { _id: memberId } } }
     );
 
     if (result.modifiedCount === 0) {
@@ -339,6 +337,37 @@ app.get('/teams', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error });
   }
 });
+// edit the team description
+
+app.put('/teams/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const { teamName, teamDescription } = req.body;
+
+  if (teamName && teamDescription) {
+    try {
+      const update = {
+        $set: {
+          teamName: teamName,
+          teamDescription: teamDescription,
+        },
+      };
+      
+      const result = await createTeamCollection.updateOne(query, update);
+
+      if (result.modifiedCount > 0) {
+        res.status(200).json({ message: 'Team updated successfully' });
+      } else {
+        res.status(404).json({ message: 'Team not found or no changes made' });
+      }
+    } catch (error) {
+      res.status(500).json({ message: 'Error updating team', error });
+    }
+  } else {
+    res.status(400).json({ message: 'teamName and teamDescription are required' });
+  }
+});
+
 // Feedback routes
 app.post("/feedback", async (req, res) => {
   try {
@@ -371,22 +400,52 @@ app.post("/feedback", async (req, res) => {
   }
 });
 
-app.get("/feedbacks", async (req, res) => {
+// Get the team request from the server
+app.get('/team-requests', async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({ message: "User email is required" });
+  }
+
   try {
-    const feedbacks = await feedbacksCollection.find().toArray();
-    res.send(feedbacks);
+    const teamRequests = await createTeamCollection.find({
+      "members.email": email,
+      "members.status": "pending"
+    }).toArray();
+
+    res.status(200).json(teamRequests);
   } catch (error) {
-    console.error("Error fetching feedbacks:", error);
-    res.status(500).send({ message: "Internal server error" });
+    res.status(500).json({ message: 'Error fetching team requests', error });
   }
 });
+// post the team requests
+app.post('/team-requests/accept', async (req, res) => {
+  const { teamId, userEmail } = req.body;
 
-// Connect to database and start server
-connectDB();
-app.get("/", (req, res) => {
-  res.send("FlowMate is here to help you collaborate with your team!");
+  if (!teamId || !userEmail) {
+    return res.status(400).json({ message: "Team ID and user email are required" });
+  }
+
+  try {
+    const result = await createTeamCollection.updateOne(
+      { _id: new ObjectId(teamId), "members.email": userEmail, "members.status": "pending" },
+      { $set: { "members.$.status": "accepted" } }
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).json({ message: "Team request not found or already processed" });
+    }
+
+    res.status(200).json({ message: "Team request accepted" });
+  } catch (error) {
+    res.status(500).json({ message: 'Error accepting team request', error });
+  }
 });
-
+connectDB(); 
+// Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  
 });
+
