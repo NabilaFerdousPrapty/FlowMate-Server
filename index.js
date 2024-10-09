@@ -26,7 +26,7 @@ app.use(
   })
 );
 
-const createTeamCollection = db.collection('create-team');
+const createTeamCollection = db.collection('teams');
 const usersCollection = db.collection("Users");
 const feedbacksCollection = db.collection("feedbacks");
 const newslettersCollection = db.collection("newsletters");
@@ -49,7 +49,20 @@ app.get('/users/admin/:email',  async (req, res) => {
   }
   res.send({ admin });
 })
+// // get all users
+// app.get('/users', async (req, res) => {
+//   const result = await usersCollection.find().toArray()
+//   res.send(result);
+// })
+// get users by email 
 
+app.get('/users', async (req, res) => {
+  const email = req.query.email;
+  if(email) {
+    const result = await usersCollection.findOne({ email: email });
+    res.send(result);
+  }
+})
 // Create a new team
 app.post('/create-team', async (req, res) => {
   try {
@@ -60,26 +73,97 @@ app.post('/create-team', async (req, res) => {
     res.status(500).send({ message: "Failed to create team", error });
   }
 });
+// pending members add on the pendingMembers
+app.patch('/teams/:teamId/add-pending-member', async (req, res) => {
+  const { teamId } = req.params;
+  const { userId } = req.body; 
+
+  try {
+    // Find the team by its ID
+    const team = await createTeamCollection.findOne({ _id: new ObjectId(teamId) });
+
+    // If the team is not found, return a 404 error
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+
+    // Check if the userId is already in the pendingMembers array
+    if (team.pendingMembers.includes(userId)) {
+      return res.status(400).json({ message: 'User is already in pending members' });
+    }
+
+    // Add the userId to the pendingMembers array
+    const update = await createTeamCollection.updateOne(
+      { _id: new ObjectId(teamId) },
+      { $addToSet: { pendingMembers: userId } }
+    );
+
+    if (update.matchedCount === 0) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+
+    res.status(200).json({
+      message: 'Member added to pendingMembers successfully',
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: 'Failed to add member to pendingMembers',
+      error: error.message,
+    });
+  }
+});
+
+// remove the member from pendingMembers and add the id on the teamMembers
+// Accept a pending member
+app.patch('/create-team/:teamId/accept-member', async (req, res) => {
+  const { teamId } = req.params;
+  const { userId } = req.body; 
+
+  try {
+    // Find the team by its ID
+    const team = await createTeamCollection.findOne({ _id: new ObjectId(teamId) });
+
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+
+    if (!team.pendingMembers.includes(userId)) {
+      return res.status(400).json({ message: 'User is not in pending members' });
+    }
+
+    // Update the team: Remove user from pendingMembers and add to teamMembers
+    await createTeamCollection.updateOne(
+      { _id: new ObjectId(teamId) },
+      {
+        $pull: { pendingMembers: userId },
+        $addToSet: { teamMembers: userId } 
+      }
+    );
+
+    res.status(200).json({ message: 'Member accepted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to accept member', error: error.message });
+  }
+});
+
 
 // Get the team list
 app.get('/create-team', async (req, res) => {
   try {
     const email = req.query.email;
+
     if (email) {
-      const result = await createTeamCollection.find({
-        $or: [
-          { email }, 
-          { "members.email": email }
-        ]
-      }).toArray();
+      const result = await createTeamCollection.find({ email }).toArray(); // Ensure find() results are converted to an array
       res.send(result);
     } else {
       res.status(400).send({ message: "Email is required" });
     }
   } catch (error) {
-    res.status(500).send({ message: "Failed to retrieve teams", error });
+    res.status(500).send({ message: "Failed to retrieve teams", error: error.message });
   }
 });
+
 //newsletter
 app.post("/newsletter", async (req, res) => {
   try {
@@ -177,33 +261,7 @@ app.get('/search', async (req, res) => {
   }
 });
 
-// Add a new member to a specific team
-app.post("/team/:id/add-member", async (req, res) => {
-  const { id } = req.params;
-  const {_id, teamId, displayName, email, role, photo, uid,status } = req.body;
 
-  try {
-    const team = await createTeamCollection.findOne({ _id: new ObjectId(id) });
-    if (!team) {
-      return res.status(404).json({ message: "Team not found" });
-    }
-    const isExiting = await team.members?.some(member => member.email === email)
-    if(isExiting) {
-      return res.status(400).json({ message: "Member with this email already exists in the team" });
-    }
-    const newMember = {_id, teamId, displayName, email, role, photo, uid,status };
-    team.members = team.members || [];
-    team.members.push(newMember);
-    const result = await createTeamCollection.updateOne(
-      { _id: new ObjectId(id) },
-      { $set: { members: team.members } }
-    );
-
-    res.status(200).json({ message: "Member added successfully", result });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to add member", error });
-  }
-});
 
 // Get team members by email
 app.get('/members', async (req, res) => {
