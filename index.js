@@ -193,15 +193,8 @@ app.post("/newsletter", async (req, res) => {
   }
 });
 
-// app.get("/newsletters", async (req, res) => {
-//   try {
-//     const newsletters = await newslettersCollection.find().toArray();
-//     res.send(newsletters);
-//   } catch (error) {
-//     console.error("Error fetching newsletters:", error);
-//     res.status(500).send({ message: "Internal server error" });
-//   }
-// });
+
+
 
 
 app.get("/newsletters", async (req, res) => {
