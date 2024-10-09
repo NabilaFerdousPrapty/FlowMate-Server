@@ -6,10 +6,11 @@ const contactRoutes = require("./routes/contactRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const userRoutes = require("./routes/userRoutes");
 const createTaskRoutes = require('./routes/createTaskRoutes');
+const createTaskBoardRoutes = require('./routes/createTaskBoardRoutes');
 const { ObjectId } = require("mongodb");
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 7000;
 
 require("dotenv").config();
 app.use(express.json());
@@ -18,6 +19,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
+      "http://localhost:7000",
       "https://flowmate-letscollaborate.web.app",
       "https://flowmate-letscollaborate.firebaseapp.com",
     ],
@@ -30,6 +32,7 @@ const createTeamCollection = db.collection('teams');
 const usersCollection = db.collection("Users");
 const feedbacksCollection = db.collection("feedbacks");
 const newslettersCollection = db.collection("newsletters");
+const  boardCollection = db.collection("createBoard");
 
 // Middleware for routes
 app.use("/payments", paymentRoutes);
@@ -37,10 +40,11 @@ app.use("/team", memberRoutes);
 app.use("/contacts", contactRoutes);
 app.use("/users", userRoutes);
 app.use("/createTask", createTaskRoutes);
+app.use("/createBoard", createTaskBoardRoutes);
 //check if user is admin
-app.get('/users/admin/:email',  async (req, res) => {
+app.get('/users/admin/:email', async (req, res) => {
   const email = req.params.email;
- 
+
   const query = { email: email };
   const user = await usersCollection.findOne(query);
   let admin = false;
@@ -187,15 +191,39 @@ app.post("/newsletter", async (req, res) => {
   }
 });
 
+// app.get("/newsletters", async (req, res) => {
+//   try {
+//     const newsletters = await newslettersCollection.find().toArray();
+//     res.send(newsletters);
+//   } catch (error) {
+//     console.error("Error fetching newsletters:", error);
+//     res.status(500).send({ message: "Internal server error" });
+//   }
+// });
+
+
 app.get("/newsletters", async (req, res) => {
   try {
+    // Ensure newslettersCollection is defined
+    if (!newslettersCollection) {
+      throw new Error("newslettersCollection is not initialized");
+    }
+
     const newsletters = await newslettersCollection.find().toArray();
+
+    // If no newsletters found, return a suitable message
+    if (newsletters.length === 0) {
+      return res.status(404).send({ message: "No newsletters found" });
+    }
+
+    // Send the newsletters
     res.send(newsletters);
   } catch (error) {
     console.error("Error fetching newsletters:", error);
     res.status(500).send({ message: "Internal server error" });
   }
 });
+
 
 // Delete a team by team admin
 app.delete('/create-team/:id', async (req, res) => {
