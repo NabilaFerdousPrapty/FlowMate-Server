@@ -106,3 +106,10 @@ exports.deleteTask = async (req, res) =>{
   res.send(result);
  }
 
+
+ exports.getEmailTask = async (req, res) => {
+  const email = req.params.email;
+  const query = { email: email };
+  const user = await taskCollection.findOne(query);
+  res.send(user);
+};

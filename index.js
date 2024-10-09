@@ -6,6 +6,7 @@ const contactRoutes = require("./routes/contactRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const userRoutes = require("./routes/userRoutes");
 const createTaskRoutes = require('./routes/createTaskRoutes');
+const createTaskBoardRoutes = require('./routes/createTaskBoardRoutes');
 const { ObjectId } = require("mongodb");
 
 const app = express();
@@ -31,6 +32,7 @@ const createTeamCollection = db.collection('create-team');
 const usersCollection = db.collection("Users");
 const feedbacksCollection = db.collection("feedbacks");
 const newslettersCollection = db.collection("newsletters");
+const  boardCollection = db.collection("createBoard");
 
 // Middleware for routes
 app.use("/payments", paymentRoutes);
@@ -38,6 +40,7 @@ app.use("/team", memberRoutes);
 app.use("/contacts", contactRoutes);
 app.use("/users", userRoutes);
 app.use("/createTask", createTaskRoutes);
+app.use("/createBoard", createTaskBoardRoutes);
 //check if user is admin
 app.get('/users/admin/:email', async (req, res) => {
   const email = req.params.email;
