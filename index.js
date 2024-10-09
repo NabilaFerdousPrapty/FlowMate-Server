@@ -49,17 +49,16 @@ app.get('/users/admin/:email',  async (req, res) => {
   }
   res.send({ admin });
 })
-// // get all users
-// app.get('/users', async (req, res) => {
-//   const result = await usersCollection.find().toArray()
-//   res.send(result);
-// })
+
 // get users by email 
 
 app.get('/users', async (req, res) => {
   const email = req.query.email;
   if(email) {
     const result = await usersCollection.findOne({ email: email });
+    res.send(result);
+  } else {
+    const result = await usersCollection.find().toArray()
     res.send(result);
   }
 })
