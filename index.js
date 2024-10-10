@@ -198,7 +198,29 @@ app.patch('/update/:id', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+// delete the teamId from the teams
 
+app.delete('/delete/:teamId/:memberId', async (req, res) => {
+  const { teamId, memberId } = req.params; // Destructure teamId and memberId from the request parameters
+
+  try {
+    // Update the team document by pulling the memberId from the teamMembers array
+    const result = await createTeamCollection.updateOne(
+      { _id: new ObjectId(teamId) }, // Query to find the team by ID
+      { $pull: { teamMembers: memberId } } // Pull the memberId from the teamMembers array
+    );
+
+    // Check if any document was modified
+    if (result.modifiedCount > 0) {
+      res.status(200).json({ message: "Member removed successfully" });
+    } else {
+      res.status(404).json({ message: "Team not found or member not found in the team" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
 
 //newsletter
 app.post("/newsletter", async (req, res) => {
