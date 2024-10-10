@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const http = require('http');
-const { Server } = require('socket.io');
+
 const { connectDB, db } = require("./utils/db");
 const memberRoutes = require("./routes/memberRoutes");
 const contactRoutes = require("./routes/contactRoutes");
@@ -31,21 +30,21 @@ app.use(
     credentials: true,
   })
 );
-const server = http.createServer(app);
-const io = new Server(server);
-const userSockets = {};
-server.listen(3000, () => {
-  console.log('Server running on port 3000');
-});
-io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+
+// const io = new Server(server);
+// const userSockets = {};
+// server.listen(3000, () => {
+//   console.log('Server running on port 3000');
+// });
+// io.on('connection', (socket) => {
+//   console.log('A user connected:', socket.id);
 
 
 
-  socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
-  });
-});
+//   socket.on('disconnect', () => {
+//     console.log('User disconnected:', socket.id);
+//   });
+// });
 
 const createTeamCollection = db.collection('teams');
 const usersCollection = db.collection("Users");
