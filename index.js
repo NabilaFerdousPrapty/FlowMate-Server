@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const http = require('http');
+const { Server } = require('socket.io');
 const { connectDB, db } = require("./utils/db");
 const memberRoutes = require("./routes/memberRoutes");
 const contactRoutes = require("./routes/contactRoutes");
@@ -29,12 +31,27 @@ app.use(
     credentials: true,
   })
 );
+const server = http.createServer(app);
+const io = new Server(server);
+const userSockets = {};
+server.listen(3000, () => {
+  console.log('Server running on port 3000');
+});
+io.on('connection', (socket) => {
+  console.log('A user connected:', socket.id);
+
+
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+});
 
 const createTeamCollection = db.collection('teams');
 const usersCollection = db.collection("Users");
 const feedbacksCollection = db.collection("feedbacks");
 const newslettersCollection = db.collection("newsletters");
-const  boardCollection = db.collection("createBoard");
+const boardCollection = db.collection("createBoard");
 
 // Middleware for routes
 app.use("/payments", paymentRoutes);
@@ -60,7 +77,7 @@ app.get('/users/admin/:email', async (req, res) => {
 
 app.get('/users', async (req, res) => {
   const email = req.query.email;
-  if(email) {
+  if (email) {
     const result = await usersCollection.findOne({ email: email });
     res.send(result);
   } else {
@@ -81,7 +98,7 @@ app.post('/create-team', async (req, res) => {
 // pending members add on the pendingMembers
 app.patch('/teams/:teamId/add-pending-member', async (req, res) => {
   const { teamId } = req.params;
-  const { userId } = req.body; 
+  const { userId } = req.body;
 
   try {
     // Find the team by its ID
@@ -123,7 +140,7 @@ app.patch('/teams/:teamId/add-pending-member', async (req, res) => {
 // Accept a pending member
 app.patch('/create-team/:teamId/accept-member', async (req, res) => {
   const { teamId } = req.params;
-  const { userId } = req.body; 
+  const { userId } = req.body;
 
   try {
     // Find the team by its ID
@@ -142,7 +159,7 @@ app.patch('/create-team/:teamId/accept-member', async (req, res) => {
       { _id: new ObjectId(teamId) },
       {
         $pull: { pendingMembers: userId },
-        $addToSet: { teamMembers: userId } 
+        $addToSet: { teamMembers: userId }
       }
     );
 
@@ -152,7 +169,15 @@ app.patch('/create-team/:teamId/accept-member', async (req, res) => {
   }
 });
 
-
+//get all the teams 
+app.get('/allTeams', async (req, res) => {
+  try {
+    const result = await createTeamCollection.find().toArray();
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ message: "Failed to retrieve teams", error });
+  }
+});
 
 // Get the team list
 app.get('/create-team', async (req, res) => {
@@ -245,9 +270,6 @@ app.post("/newsletter", async (req, res) => {
     res.status(500).send({ message: "Internal server error" });
   }
 });
-
-
-
 
 
 app.get("/newsletters", async (req, res) => {
@@ -406,7 +428,7 @@ app.put('/teams/:id', async (req, res) => {
           teamDescription: teamDescription,
         },
       };
-      
+
       const result = await createTeamCollection.updateOne(query, update);
 
       if (result.modifiedCount > 0) {
@@ -453,6 +475,17 @@ app.post("/feedback", async (req, res) => {
     res.status(500).send({ message: "Internal server error" });
   }
 });
+app.get("/feedbacks", async (req, res) => {
+  try {
+    const result = await feedbacksCollection.find().toArray();
+    res.send(result
+    );
+  } catch (error) {
+    console.error("Error fetching feedbacks:", error);
+    res.status(500).send({ message: "Internal server error" });
+  }
+});
+
 
 // Get the team request from the server
 app.get('/team-requests', async (req, res) => {
@@ -496,10 +529,10 @@ app.post('/team-requests/accept', async (req, res) => {
     res.status(500).json({ message: 'Error accepting team request', error });
   }
 });
-connectDB(); 
+connectDB();
 // Start server
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
-  
+
 });
 
