@@ -330,6 +330,14 @@ app.get('/teams', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error });
   }
 });
+app.get('/feedbacks', async (req, res) => {
+  try {
+    const result = await feedbacksCollection.find().toArray();
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ message: "Failed to retrieve teams", error });
+  }
+});
 // edit the team description
 
 app.put('/teams/:id', async (req, res) => {
