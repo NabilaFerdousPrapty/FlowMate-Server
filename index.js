@@ -169,6 +169,37 @@ app.get('/create-team', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error: error.message });
   }
 });
+
+
+// Update team name
+app.patch('/update/:id', async (req, res) => {
+  const id = req.params.id; // Get the ID from the request parameters
+  const { teamName } = req.body; // Extract teamName from the request body
+
+  // Ensure the ID is valid
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid ID format' });
+  }
+
+  try {
+    const query = { _id: new ObjectId(id) }; // Query to find the document
+    const update = { $set: { teamName } }; // Update object
+
+    // Perform the update operation
+    const result = await createTeamCollection.updateOne(query, update); // Replace yourCollection with your actual collection name
+
+    if (result.modifiedCount > 0) {
+      res.status(200).json({ message: 'Team name updated successfully' });
+    } else {
+      res.status(404).json({ message: 'Team not found or no changes made' });
+    }
+  } catch (error) {
+    console.error('Error updating team name:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+
 //newsletter
 app.post("/newsletter", async (req, res) => {
   try {
