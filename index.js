@@ -8,6 +8,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const userRoutes = require("./routes/userRoutes");
 const createTaskRoutes = require('./routes/createTaskRoutes');
 const createTaskBoardRoutes = require('./routes/createTaskBoardRoutes');
+const timerDataRoutes = require('./routes/timerDataRoutes');
 const { ObjectId } = require("mongodb");
 
 const app = express();
@@ -50,6 +51,7 @@ const usersCollection = db.collection("Users");
 const feedbacksCollection = db.collection("feedbacks");
 const newslettersCollection = db.collection("newsletters");
 const boardCollection = db.collection("createBoard");
+const timerCollection = db.collection("timerData");
 
 // Middleware for routes
 app.use("/payments", paymentRoutes);
@@ -58,6 +60,7 @@ app.use("/contacts", contactRoutes);
 app.use("/users", userRoutes);
 app.use("/createTask", createTaskRoutes);
 app.use("/createBoard", createTaskBoardRoutes);
+app.use("/timerData", timerDataRoutes);
 //check if user is admin
 app.get('/users/admin/:email', async (req, res) => {
   const email = req.params.email;
@@ -192,6 +195,59 @@ app.get('/create-team', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error: error.message });
   }
 });
+
+
+// Update team name
+app.patch('/update/:id', async (req, res) => {
+  const id = req.params.id; // Get the ID from the request parameters
+  const { teamName } = req.body; // Extract teamName from the request body
+
+  // Ensure the ID is valid
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ message: 'Invalid ID format' });
+  }
+
+  try {
+    const query = { _id: new ObjectId(id) }; // Query to find the document
+    const update = { $set: { teamName } }; // Update object
+
+    // Perform the update operation
+    const result = await createTeamCollection.updateOne(query, update); // Replace yourCollection with your actual collection name
+
+    if (result.modifiedCount > 0) {
+      res.status(200).json({ message: 'Team name updated successfully' });
+    } else {
+      res.status(404).json({ message: 'Team not found or no changes made' });
+    }
+  } catch (error) {
+    console.error('Error updating team name:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+// delete the teamId from the teams
+
+app.delete('/delete/:teamId/:memberId', async (req, res) => {
+  const { teamId, memberId } = req.params; // Destructure teamId and memberId from the request parameters
+
+  try {
+    // Update the team document by pulling the memberId from the teamMembers array
+    const result = await createTeamCollection.updateOne(
+      { _id: new ObjectId(teamId) }, // Query to find the team by ID
+      { $pull: { teamMembers: memberId } } // Pull the memberId from the teamMembers array
+    );
+
+    // Check if any document was modified
+    if (result.modifiedCount > 0) {
+      res.status(200).json({ message: "Member removed successfully" });
+    } else {
+      res.status(404).json({ message: "Team not found or member not found in the team" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 //newsletter
 app.post("/newsletter", async (req, res) => {
   try {
@@ -345,6 +401,14 @@ app.delete('/members/:teamId/:memberId', async (req, res) => {
 app.get('/teams', async (req, res) => {
   try {
     const result = await createTeamCollection.find().toArray();
+    res.send(result);
+  } catch (error) {
+    res.status(500).send({ message: "Failed to retrieve teams", error });
+  }
+});
+app.get('/feedbacks', async (req, res) => {
+  try {
+    const result = await feedbacksCollection.find().toArray();
     res.send(result);
   } catch (error) {
     res.status(500).send({ message: "Failed to retrieve teams", error });
