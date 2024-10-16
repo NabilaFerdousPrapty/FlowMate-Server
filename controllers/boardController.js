@@ -24,6 +24,7 @@ exports.createBoard = async (req, res) => {
       res.status(500).send({ message: "Failed to fetch board" });
     }
   };
+
   
   
 exports.specificBoard = async (req, res) =>{ 
@@ -41,3 +42,4 @@ exports.specificBoard = async (req, res) =>{
   const user = await boardCollection.findOne(query);
   res.send(user);
 };
+
