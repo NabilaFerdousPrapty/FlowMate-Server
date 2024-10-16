@@ -6,9 +6,9 @@ const jwt = require("jsonwebtoken");
 
 exports.createUser = async (req, res) => {
   try {
-    const { name, email, password, role, status, photo,teamName } = req.body;
+    const { name, email, password, role, status, photo, teamName } = req.body;
     // console.log(req.body);
-    
+
     const isExiting = await usersCollection.findOne({ email });
 
     if (isExiting) {
@@ -71,5 +71,33 @@ exports.getUsers = async (req, res) => {
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).send({ message: "Failed to fetch users" });
+  }
+};
+
+
+exports.updateUserProfileByEmail = async (req, res) => {
+  try {
+    const { email } = req.body; // Email comes from the frontend
+    const { name, photo } = req.body; // Expecting name and photo URL from the frontend
+
+    // Find the user by email and update the name and photo
+    const updatedUser = await Users.findOneAndUpdate(
+      { email: email }, // Find the user by email
+      {
+        name: name,
+        photo: photo
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    // Respond with the updated user data
+    res.status(200).send({ message: "Profile updated successfully", user: updatedUser });
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    res.status(500).send({ message: "Failed to update user profile" });
   }
 };
