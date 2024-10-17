@@ -9,7 +9,7 @@ const router = express.Router();
 
 
 const upload = require("../middlewares/multer");
-router.post("/", upload.single("file"), createTask);
+router.post("/", createTask);
 router.get("/", getTask);
 router.get("/:id", specificTask);
 router.get("/:email", getEmailTask);
