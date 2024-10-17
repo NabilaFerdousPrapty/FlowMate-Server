@@ -77,27 +77,28 @@ exports.getUsers = async (req, res) => {
 
 exports.updateUserProfileByEmail = async (req, res) => {
   try {
-    const { email } = req.body; // Email comes from the frontend
-    const { name, photo } = req.body; // Expecting name and photo URL from the frontend
+    const { email, name, photo } = req.body;
 
-    // Find the user by email and update the name and photo
+    if (!email || !name || !photo) {
+      return res.status(400).send({ message: "Missing required fields" });
+    }
+
+    // Use $set operator to update only the specific fields
     const updatedUser = await Users.findOneAndUpdate(
       { email: email }, // Find the user by email
-      {
-        name: name,
-        photo: photo
-      },
-      { new: true } // Return the updated document
+      { $set: { name: name, photo: photo } }, // Use $set to update name and photo
+      { new: true } // Return the updated user document
     );
 
     if (!updatedUser) {
       return res.status(404).send({ message: "User not found" });
     }
 
-    // Respond with the updated user data
     res.status(200).send({ message: "Profile updated successfully", user: updatedUser });
   } catch (error) {
     console.error("Error updating user profile:", error);
     res.status(500).send({ message: "Failed to update user profile" });
   }
 };
+
+
