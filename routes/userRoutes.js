@@ -3,6 +3,7 @@ const {
   createUser,
   getUsers,
   login,
+  updateUserProfileByEmail,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -10,5 +11,5 @@ const router = express.Router();
 router.post("/create", createUser);
 router.post("/login", login);
 router.get("/get", getUsers);
-
+router.patch("/updateProfileByEmail", updateUserProfileByEmail);
 module.exports = router;

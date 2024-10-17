@@ -40,19 +40,6 @@ exports.createTask = async (req, res) => {
   }
 };
 
-// exports.createTask = async (req, res) => {
-//   try {
-//     console.log("received data", req.body);
-//     const query = req.body;
-//     const result = await taskCollection.insertOne(query);
-//     res.send(result);
-//     console.log(result);
-//   } catch (error) {
-//     console.error("Error creating Task:", error);
-//     res.status(500).send({ message: "Failed to create Task" });
-//   }
-// };
-
 exports.getTask = async (req, res) => {
   const { sort, search } = req.query; // Get sorting order and search query
 
@@ -130,13 +117,6 @@ exports.specificTask = async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const result = await taskCollection.findOne(query);
-  res.send(result);
-};
-
-exports.deleteTask = async (req, res) => {
-  const id = req.params.id;
-  const query = { _id: new ObjectId(id) };
-  const result = await taskCollection.deleteOne(query);
   res.send(result);
 };
 
