@@ -96,7 +96,7 @@ app.post('/create-team', async (req, res) => {
     res.status(500).send({ message: "Failed to create team", error });
   }
 });
-// pending members add on the pendingMembers
+// pending members add on the 
 app.patch('/teams/:teamId/add-pending-member', async (req, res) => {
   const { teamId } = req.params;
   const { userId } = req.body;
