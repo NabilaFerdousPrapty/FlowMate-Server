@@ -28,7 +28,7 @@ exports.createTask = async (req, res) => {
       userName,
       boardName,
       teamName,
-      filePath: req.file ? req.file.path : null, // Save file path if uploaded
+
     };
 
     const result = await taskCollection.insertOne(newTask);
