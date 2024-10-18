@@ -102,15 +102,27 @@ exports.updateTask = async (req, res) => {
 };
 
 exports.updateOneTask = async (req, res) => {
-  const id = req.params.id;
-  const filter = { _id: new ObjectId(id) };
-  const updatedDoc = {
-    $set: {
-      stage: "done",
-    },
-  };
-  const result = await taskCollection.updateOne(filter, updatedDoc);
-  res.send(result);
+  try {
+    const id = req.params.id; // Get the task ID from the request parameters
+    const filter = { _id: new ObjectId(id) }; // Filter to find the task by ID
+
+    const updatedDoc = {
+      $set: {
+        stage: "done", // Set the stage to "done"
+      },
+    };
+
+    const result = await taskCollection.updateOne(filter, updatedDoc);
+
+    if (result.matchedCount === 0) {
+      return res.status(404).send({ message: "Task not found" });
+    }
+
+    res.send({ message: "Task updated successfully", result });
+  } catch (error) {
+    console.error("Error updating Task:", error);
+    res.status(500).send({ message: "Failed to update Task" });
+  }
 };
 
 exports.specificTask = async (req, res) => {
