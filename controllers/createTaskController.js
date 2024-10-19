@@ -4,9 +4,9 @@ const { v2: cloudinary } = require("cloudinary");
 const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 cloudinary.config({
-  cloud_name: 'dadvrb8ri', // Your Cloudinary cloud name
-  api_key: '394644311582722', // Your Cloudinary API key
-  api_secret: 'TO5nXtWfp27kdWzhQpMaB9g9ock', // Your Cloudinary API secret
+  cloud_name: process.env.Cloud_Name,
+  api_key: process.env.Api_Key,
+  api_secret: process.env.Api_Secret,
 });
 exports.createTask = async (req, res) => {
   try {
@@ -121,7 +121,7 @@ exports.updateOneTask = async (req, res) => {
 
     // Store the file URLs in an array
     const fileUrls = req.body.files; // Array of file URLs from the frontend
-    console.log("Received File URLs:", fileUrls);
+    // console.log("Received File URLs:", fileUrls);
 
     const updatedDoc = {
       $set: {
