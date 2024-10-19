@@ -15,7 +15,7 @@ router.get("/:id", specificTask);
 router.get("/:email", getEmailTask);
 
 router.delete("/:id", deleteTask);
-router.put("/file/:id", updateOneTask);
+router.put("/file/:id", upload.single('file'), updateOneTask);
 router.patch("/:id", updateTask);
 
 module.exports = router;
