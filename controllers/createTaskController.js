@@ -1,6 +1,13 @@
 const { ObjectId } = require("mongodb");
 const taskCollection = require("../models/createTaskModel");
-
+const { v2: cloudinary } = require("cloudinary");
+const multer = require("multer");
+const upload = multer({ dest: "uploads/" });
+cloudinary.config({
+  cloud_name: process.env.Cloud_Name,
+  api_key: process.env.Api_Key,
+  api_secret: process.env.Api_Secret,
+});
 exports.createTask = async (req, res) => {
   try {
     console.log("Received data", req.body);
@@ -103,12 +110,23 @@ exports.updateTask = async (req, res) => {
 
 exports.updateOneTask = async (req, res) => {
   try {
-    const id = req.params.id; // Get the task ID from the request parameters
-    const filter = { _id: new ObjectId(id) }; // Filter to find the task by ID
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    console.log("Task ID:", id);
+
+    // Check if an array of file URLs has been provided
+    if (!req.body.files || req.body.files.length === 0) {
+      return res.status(400).send({ message: "No file URLs provided" });
+    }
+
+    // Store the file URLs in an array
+    const fileUrls = req.body.files; // Array of file URLs from the frontend
+    // console.log("Received File URLs:", fileUrls);
 
     const updatedDoc = {
       $set: {
-        stage: "done", // Set the stage to "done"
+        stage: "done",
+        filePaths: fileUrls, // Save the array of file URLs in MongoDB
       },
     };
 
@@ -118,7 +136,14 @@ exports.updateOneTask = async (req, res) => {
       return res.status(404).send({ message: "Task not found" });
     }
 
-    res.send({ message: "Task updated successfully", result });
+    if (result.modifiedCount === 0) {
+      return res.status(404).send({ message: "No changes made" });
+    }
+
+    return res.status(200).send({
+      message: "Task updated successfully",
+      data: updatedDoc,
+    });
   } catch (error) {
     console.error("Error updating Task:", error);
     res.status(500).send({ message: "Failed to update Task" });
