@@ -1,7 +1,7 @@
 const express = require("express");
 
 
-const { createTask, getTask, updateTask, deleteTask, specificTask, updateOneTask, getEmailTask } = require("../controllers/createTaskController");
+const { createTask, getTask, updateTask, deleteTask, specificTask, updateOneTask, getEmailTask, updateTaskFile } = require("../controllers/createTaskController");
 
 
 const router = express.Router();
@@ -15,7 +15,8 @@ router.get("/:id", specificTask);
 router.get("/:email", getEmailTask);
 
 router.delete("/:id", deleteTask);
-router.put("/file/:id", upload.single('file'), updateOneTask);
+router.put("/file/:id", upload.single('file'), updateTaskFile);
+router.put("/:id", updateOneTask);
 router.patch("/:id", updateTask);
 
 module.exports = router;
