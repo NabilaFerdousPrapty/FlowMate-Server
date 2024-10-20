@@ -108,7 +108,7 @@ exports.updateTask = async (req, res) => {
   }
 };
 
-exports.updateOneTask = async (req, res) => {
+exports.updateTaskFile = async (req, res) => {
   try {
     const id = req.params.id;
     const filter = { _id: new ObjectId(id) };
@@ -149,6 +149,24 @@ exports.updateOneTask = async (req, res) => {
     res.status(500).send({ message: "Failed to update Task" });
   }
 };
+exports.updateOneTask = async (req, res) => {
+  const id = req.params.id;
+  const filter = { _id: new ObjectId(id) };
+  const updatedDoc = {
+    $set: {
+      stage: "done",
+    },
+  };
+  const result = await taskCollection.updateOne(filter, updatedDoc);
+  res.send(result);
+}
+
+exports.specificTask = async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) };
+  const result = await taskCollection.findOne(query);
+  res.send(result);
+}
 
 exports.specificTask = async (req, res) => {
   const id = req.params.id;
