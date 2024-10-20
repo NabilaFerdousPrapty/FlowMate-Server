@@ -121,12 +121,14 @@ exports.updateTaskFile = async (req, res) => {
 
     // Store the file URLs in an array
     const fileUrls = req.body.files; // Array of file URLs from the frontend
-    // console.log("Received File URLs:", fileUrls);
 
+    // Use $push with $each to append the new files to the existing filePaths array
     const updatedDoc = {
       $set: {
         stage: "done",
-        filePaths: fileUrls, // Save the array of file URLs in MongoDB
+      },
+      $push: {
+        filePaths: { $each: fileUrls },
       },
     };
 
