@@ -183,3 +183,30 @@ exports.getEmailTask = async (req, res) => {
   const user = await taskCollection.findOne(query);
   res.send(user);
 };
+exports.getTaskByTeam = async (req, res) => {
+  const { teamName } = req.params;
+  const { sort, search } = req.query; // Get sorting order and search query
+
+  try {
+    // Determine sort order: -1 for descending (newest first), 1 for ascending (oldest first)
+    const sortOrder = sort === "newest" ? -1 : 1;
+
+    // Construct query object for search
+    const query = {
+      teamName: teamName,
+      ...(search ? { taskTitle: { $regex: search, $options: "i" } } : {}), // Case-insensitive search
+    };
+
+    // Fetch and sort the tasks from the database
+    const result = await taskCollection
+      .find(query)
+      .sort({ startDate: sortOrder })
+      .toArray();
+
+    // Send the result back to the client
+    res.send(result);
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    res.status(500).send({ message: "Failed to fetch tasks" });
+  }
+};
