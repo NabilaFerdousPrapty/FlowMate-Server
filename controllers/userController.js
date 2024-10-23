@@ -101,4 +101,54 @@ exports.updateUserProfileByEmail = async (req, res) => {
   }
 };
 
+exports.updateFileCountByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
 
+    // Check if email is provided
+    if (!email) {
+      return res.status(400).send({ message: "Email is required" });
+    }
+
+    // Find the user by email and increment fileCount by 1
+    const updatedUser = await Users.findOneAndUpdate(
+      { email: email },
+      { $inc: { fileCount: 1 } }, // Increment fileCount by 1
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.status(200).send({ message: "File count updated successfully", user: updatedUser });
+  } catch (error) {
+    console.error("Error updating file count:", error);
+    res.status(500).send({ message: "Failed to update file count" });
+  }
+};
+exports.getFileCountByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    // Check if email is provided
+    if (!email) {
+      return res.status(400).send({ message: "Email is required" });
+    }
+
+    // Find the user by email
+    const user = await Users.findOne({ email: email });
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    // Return fileCount, defaulting to 0 if fileCount is not present
+    const fileCount = user.fileCount || 0;
+
+    res.status(200).send({ message: "File count fetched successfully", fileCount });
+  } catch (error) {
+    console.error("Error fetching file count:", error);
+    res.status(500).send({ message: "Failed to fetch file count" });
+  }
+};

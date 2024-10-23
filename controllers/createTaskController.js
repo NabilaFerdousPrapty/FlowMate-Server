@@ -231,4 +231,36 @@ exports.getTaskStatusCounts = async (req, res) => {
     res.status(500).send({ message: "Failed to fetch task status counts" });
   }
 };
+exports.getTaskCountByEmailAndStatus = async (req, res) => {
+  try {
+    const email = req.params.email;
+
+    // Check if email is provided
+    if (!email) {
+      return res.status(400).send({ message: "Email is required" });
+    }
+
+    // Get total task count assigned to the user by email
+    const totalTaskCount = await taskCollection.countDocuments({ email: email });
+
+    // Get the count of tasks in different stages (todo, in progress, done) for this user
+    const todoCount = await taskCollection.countDocuments({ email: email, stage: "todo" });
+    const inProgressCount = await taskCollection.countDocuments({ email: email, stage: "in progress" });
+    const doneCount = await taskCollection.countDocuments({ email: email, stage: "done" });
+
+    // Construct the response object with total count and counts for each stage
+    const taskStatusCounts = {
+      totalTasks: totalTaskCount,
+      todo: todoCount,
+      inProgress: inProgressCount,
+      done: doneCount,
+    };
+
+    // Send the response
+    res.send(taskStatusCounts);
+  } catch (error) {
+    console.error("Error fetching task counts by email and status:", error);
+    res.status(500).send({ message: "Failed to fetch task counts" });
+  }
+};
 
