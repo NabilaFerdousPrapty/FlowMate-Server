@@ -61,7 +61,6 @@ app.use("/users", userRoutes);
 app.use("/createTask", createTaskRoutes);
 app.use("/createBoard", createTaskBoardRoutes);
 app.use("/timerData", timerDataRoutes);
-//check if user is admin
 app.get('/users/admin/:email', async (req, res) => {
   const email = req.params.email;
 
