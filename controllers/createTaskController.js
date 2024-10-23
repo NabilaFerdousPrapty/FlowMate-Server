@@ -210,3 +210,25 @@ exports.getTaskByTeam = async (req, res) => {
     res.status(500).send({ message: "Failed to fetch tasks" });
   }
 };
+exports.getTaskStatusCounts = async (req, res) => {
+  try {
+    // Get the count of tasks in each stage using normal queries
+    const todoCount = await taskCollection.countDocuments({ stage: "todo" });
+    const inProgressCount = await taskCollection.countDocuments({ stage: "in progress" });
+    const doneCount = await taskCollection.countDocuments({ stage: "done" });
+
+    // Construct the response object
+    const statusCounts = {
+      todo: todoCount,
+      inProgress: inProgressCount,
+      done: doneCount,
+    };
+
+    // Send the response with the counts for each stage
+    res.send(statusCounts);
+  } catch (error) {
+    console.error("Error fetching task status counts:", error);
+    res.status(500).send({ message: "Failed to fetch task status counts" });
+  }
+};
+
