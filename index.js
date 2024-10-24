@@ -73,6 +73,7 @@ app.get('/users/admin/:email', async (req, res) => {
   res.send({ admin });
 })
 
+
 // get users by email 
 
 app.get('/users', async (req, res) => {
@@ -447,8 +448,10 @@ app.put('/teams/:id', async (req, res) => {
 // Feedback routes
 app.post("/feedback", async (req, res) => {
   try {
-    const { rating, feedback } = req.body;
+    const { rating, feedback, imageUrl } = req.body;
     const userEmail = req.query.email;
+
+    console.log("Image URL received:", imageUrl); // Add logging
 
     if (userEmail) {
       // Find user by email
@@ -459,6 +462,7 @@ app.post("/feedback", async (req, res) => {
           userId: user._id,
           name: user.name,
           image: user.photo,
+          feedbackImage: imageUrl, // This should correctly save the image URL
           rating: rating,
           feedback: feedback,
           createdAt: new Date(),
@@ -475,6 +479,7 @@ app.post("/feedback", async (req, res) => {
     res.status(500).send({ message: "Internal server error" });
   }
 });
+
 app.get("/feedbacks", async (req, res) => {
   try {
     const result = await feedbacksCollection.find().toArray();
