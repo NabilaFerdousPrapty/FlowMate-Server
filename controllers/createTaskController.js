@@ -283,4 +283,33 @@ exports.getTasksByStage = async (req, res) => {
     res.status(500).send({ message: "Error fetching tasks" }); // Avoid sending error object directly
   }
 };
+exports.updateTaskStage = async (req, res) => {
+  try {
+    const { id, newStage } = req.body; // Expecting ID and new stage in the request body
+    const filter = { _id: new ObjectId(id) };
 
+    // Update the task's stage
+    const updatedDoc = {
+      $set: {
+        stage: newStage,
+      },
+    };
+
+    const result = await taskCollection.updateOne(filter, updatedDoc);
+
+    if (result.matchedCount === 0) {
+      return res.status(404).send({ message: "Task not found" });
+    }
+
+    if (result.modifiedCount === 0) {
+      return res.status(400).send({ message: "No changes made" });
+    }
+
+    return res.status(200).send({
+      message: "Task stage updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating task stage:", error);
+    res.status(500).send({ message: "Failed to update task stage" });
+  }
+};
