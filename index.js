@@ -444,7 +444,7 @@ app.put('/teams/:id', async (req, res) => {
   }
 });
 
-// Feedback routes
+
 app.post("/feedback", async (req, res) => {
   try {
     const { rating, feedback } = req.body;
@@ -487,7 +487,7 @@ app.get("/feedbacks", async (req, res) => {
 });
 
 
-// Get the team request from the server
+
 app.get('/team-requests', async (req, res) => {
   const { email } = req.query;
 
@@ -506,7 +506,7 @@ app.get('/team-requests', async (req, res) => {
     res.status(500).json({ message: 'Error fetching team requests', error });
   }
 });
-// post the team requests
+
 app.post('/team-requests/accept', async (req, res) => {
   const { teamId, userEmail } = req.body;
 
@@ -530,13 +530,13 @@ app.post('/team-requests/accept', async (req, res) => {
   }
 });
 connectDB();
-// Start server
+
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server is running all time ${port}`);
 
 });
 
 app.get("/", (req, res) => {
-  res.send("Welcome to FlowMate API");
+  res.send("Welcome to FlowMate API and thank you users");
 }
 );
