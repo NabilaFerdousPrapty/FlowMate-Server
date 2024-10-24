@@ -487,7 +487,7 @@ app.get("/feedbacks", async (req, res) => {
 });
 
 
-// Get the team request from the server
+
 app.get('/team-requests', async (req, res) => {
   const { email } = req.query;
 
