@@ -444,7 +444,7 @@ app.put('/teams/:id', async (req, res) => {
   }
 });
 
-// Feedback routes
+
 app.post("/feedback", async (req, res) => {
   try {
     const { rating, feedback } = req.body;
@@ -506,7 +506,7 @@ app.get('/team-requests', async (req, res) => {
     res.status(500).json({ message: 'Error fetching team requests', error });
   }
 });
-// post the team requests
+
 app.post('/team-requests/accept', async (req, res) => {
   const { teamId, userEmail } = req.body;
 
@@ -530,9 +530,9 @@ app.post('/team-requests/accept', async (req, res) => {
   }
 });
 connectDB();
-// Start server
+
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server is running all time ${port}`);
 
 });
 
