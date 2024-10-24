@@ -212,7 +212,7 @@ exports.getTaskByTeam = async (req, res) => {
 };
 exports.getTaskStatusCounts = async (req, res) => {
   try {
-    // Get the count of tasks in each stage using normal queries
+
     const todoCount = await taskCollection.countDocuments({ stage: "todo" });
     const inProgressCount = await taskCollection.countDocuments({ stage: "in progress" });
     const doneCount = await taskCollection.countDocuments({ stage: "done" });
@@ -261,6 +261,26 @@ exports.getTaskCountByEmailAndStatus = async (req, res) => {
   } catch (error) {
     console.error("Error fetching task counts by email and status:", error);
     res.status(500).send({ message: "Failed to fetch task counts" });
+  }
+};
+
+exports.getTasksByStage = async (req, res) => {
+  const teamName = req.params.teamName;
+  const stage = req.params.stage; // Get stage from params
+  // console.log("teamName", teamName);
+  // console.log("stage", stage);
+
+  const query = {
+    teamName: teamName,
+    stage: stage,
+  };
+
+  try {
+    const tasks = await taskCollection.find(query).toArray(); // Ensure you convert cursor to array
+    res.send(tasks);
+  } catch (error) {
+    console.error("Error fetching tasks:", error); // Log error for debugging
+    res.status(500).send({ message: "Error fetching tasks" }); // Avoid sending error object directly
   }
 };
 
