@@ -537,6 +537,6 @@ app.listen(port, () => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Welcome to FlowMate API");
+  res.send("Welcome to FlowMate API and thank you users");
 }
 );
