@@ -130,20 +130,21 @@ exports.updateFileCountByEmail = async (req, res) => {
 exports.getFileCountByEmail = async (req, res) => {
   try {
     const { email } = req.params;
+    console.log(email);
 
     // Check if email is provided
     if (!email) {
       return res.status(400).send({ message: "Email is required" });
     }
 
-    // Find the user by email
-    const user = await Users.findOne({ email: email });
+
+    const user = await usersCollection.findOne({ email: email });
 
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
 
-    // Return fileCount, defaulting to 0 if fileCount is not present
+
     const fileCount = user.fileCount || 0;
 
     res.status(200).send({ message: "File count fetched successfully", fileCount });
