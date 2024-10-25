@@ -22,7 +22,7 @@ router.delete("/:id", deleteTask);
 router.put("/file/:id", upload.single('file'), updateTaskFile);
 router.put("/:id", updateOneTask);
 router.patch("/:id", updateTask);
-router.put("/updateStage/:taskId", updateTaskStage);
+router.put("/updateStage", updateTaskStage);
 
 
 module.exports = router;

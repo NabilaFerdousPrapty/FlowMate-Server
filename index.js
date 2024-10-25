@@ -451,7 +451,7 @@ app.post("/feedback", async (req, res) => {
     const { rating, feedback, imageUrl } = req.body;
     const userEmail = req.query.email;
 
-    console.log("Image URL received:", imageUrl); // Add logging
+    // console.log("Image URL received:", imageUrl); // Add logging
 
     if (userEmail) {
       // Find user by email
