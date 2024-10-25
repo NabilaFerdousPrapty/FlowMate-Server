@@ -130,7 +130,7 @@ exports.updateFileCountByEmail = async (req, res) => {
 exports.getFileCountByEmail = async (req, res) => {
   try {
     const { email } = req.params;
-    console.log(email);
+    // console.log(email);
 
     // Check if email is provided
     if (!email) {

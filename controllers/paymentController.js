@@ -1,6 +1,6 @@
 const stripe = require('stripe')(process.env.Payment_Api_Key); // Import and initialize Stripe
-const { db } = require("../utils/db"); 
-const paymentsCollection = db.collection("payments"); 
+const { db } = require("../utils/db");
+const paymentsCollection = db.collection("payments");
 
 exports.createPaymentIntent = async (req, res) => {
   try {
@@ -11,7 +11,7 @@ exports.createPaymentIntent = async (req, res) => {
       currency: "usd",
       payment_method_types: ["card"],
     });
-    console.log("Payment Intent Created:", paymentIntent);
+    // console.log("Payment Intent Created:", paymentIntent);
     res.send({ clientSecret: paymentIntent.client_secret });
   } catch (error) {
     console.error("Error creating payment intent:", error); // Add detailed logging

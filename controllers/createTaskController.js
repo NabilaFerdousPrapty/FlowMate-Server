@@ -1,8 +1,6 @@
 const { ObjectId } = require("mongodb");
 const taskCollection = require("../models/createTaskModel");
 const { v2: cloudinary } = require("cloudinary");
-const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
 cloudinary.config({
   cloud_name: process.env.Cloud_Name,
   api_key: process.env.Api_Key,
@@ -10,7 +8,7 @@ cloudinary.config({
 });
 exports.createTask = async (req, res) => {
   try {
-    console.log("Received data", req.body);
+    // console.log("Received data", req.body);
     const {
       taskTitle,
       assignedTo,
@@ -40,7 +38,7 @@ exports.createTask = async (req, res) => {
 
     const result = await taskCollection.insertOne(newTask);
     res.send(result);
-    console.log("Task created:", result);
+    // console.log("Task created:", result);
   } catch (error) {
     console.error("Error creating task:", error);
     res.status(500).send({ message: "Failed to create Task" });
