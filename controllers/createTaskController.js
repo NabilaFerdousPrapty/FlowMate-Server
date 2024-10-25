@@ -1,8 +1,6 @@
 const { ObjectId } = require("mongodb");
 const taskCollection = require("../models/createTaskModel");
 const { v2: cloudinary } = require("cloudinary");
-const multer = require("multer");
-const upload = multer({ dest: "uploads/" });
 cloudinary.config({
   cloud_name: process.env.Cloud_Name,
   api_key: process.env.Api_Key,
