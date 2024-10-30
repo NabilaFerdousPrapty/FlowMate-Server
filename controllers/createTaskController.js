@@ -96,6 +96,7 @@ exports.updateTask = async (req, res) => {
         stage: items.stage,
         priority: items.priority,
         assignedTo: items.assignedTo,
+        workerMail: items.workerMail,
       },
     };
     const result = await taskCollection.updateOne(filter, updatedDoc);
@@ -105,7 +106,6 @@ exports.updateTask = async (req, res) => {
     res.status(500).send({ message: "Failed to update Task" });
   }
 };
-
 exports.updateTaskFile = async (req, res) => {
   try {
     const id = req.params.id;
