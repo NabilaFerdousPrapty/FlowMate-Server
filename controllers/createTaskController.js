@@ -96,6 +96,7 @@ exports.updateTask = async (req, res) => {
         stage: items.stage,
         priority: items.priority,
         assignedTo: items.assignedTo,
+        workerMail: items.workerMail,
       },
     };
     const result = await taskCollection.updateOne(filter, updatedDoc);
