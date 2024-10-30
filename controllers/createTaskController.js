@@ -106,12 +106,11 @@ exports.updateTask = async (req, res) => {
     res.status(500).send({ message: "Failed to update Task" });
   }
 };
-
 exports.updateTaskFile = async (req, res) => {
   try {
     const id = req.params.id;
     const filter = { _id: new ObjectId(id) };
-    console.log("Task ID:", id);
+    // console.log("Task ID:", id);
 
     // Check if an array of file URLs has been provided
     if (!req.body.files || req.body.files.length === 0) {
@@ -266,8 +265,7 @@ exports.getTaskCountByEmailAndStatus = async (req, res) => {
 exports.getTasksByStage = async (req, res) => {
   const teamName = req.params.teamName;
   const stage = req.params.stage; // Get stage from params
-  // console.log("teamName", teamName);
-  // console.log("stage", stage);
+
 
   const query = {
     teamName: teamName,
@@ -275,7 +273,7 @@ exports.getTasksByStage = async (req, res) => {
   };
 
   try {
-    const tasks = await taskCollection.find(query).toArray(); // Ensure you convert cursor to array
+    const tasks = await taskCollection.find(query).toArray();
     res.send(tasks);
   } catch (error) {
     console.error("Error fetching tasks:", error); // Log error for debugging
@@ -284,31 +282,46 @@ exports.getTasksByStage = async (req, res) => {
 };
 exports.updateTaskStage = async (req, res) => {
   try {
-    const { id, newStage } = req.body; // Expecting ID and new stage in the request body
+    const { newStage } = req.body;
+    // console.log("Received data", req.body);
+    const id = req.params.taskId;
+    // Check that 'id' and 'newStage' are provided in the request body
+    if (!newStage) {
+      return res.status(400).json({ message: " new stage is required" });
+    }
+
+    // Validate that the ID is a valid ObjectId
+    // if (!ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid ID format" });
+    // }
+    // console.log(id);
+
+    // Set up filter and update for the MongoDB operation
     const filter = { _id: new ObjectId(id) };
+    const update = { $set: { stage: newStage } };
 
-    // Update the task's stage
-    const updatedDoc = {
-      $set: {
-        stage: newStage,
-      },
-    };
+    // Perform the update operation
+    const result = await taskCollection.updateOne(filter, update);
 
-    const result = await taskCollection.updateOne(filter, updatedDoc);
-
+    // Check if the task was found
     if (result.matchedCount === 0) {
-      return res.status(404).send({ message: "Task not found" });
+      return res.status(404).json({ message: "Task not found" });
     }
 
+    // Check if the task was modified
     if (result.modifiedCount === 0) {
-      return res.status(400).send({ message: "No changes made" });
+      return res.status(400).json({ message: "No changes were made to the task stage" });
     }
 
-    return res.status(200).send({
-      message: "Task stage updated successfully",
-    });
+    // Respond with success message
+    return res.status(200).json({ message: "Task stage updated successfully" });
+
   } catch (error) {
     console.error("Error updating task stage:", error);
-    res.status(500).send({ message: "Failed to update task stage" });
+    res.status(500).json({ message: "An internal error occurred while updating task stage" });
   }
 };
+
+// ID params er modddhe pass kortechen?
+
+
