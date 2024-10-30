@@ -149,6 +149,44 @@ exports.updateTaskFile = async (req, res) => {
     res.status(500).send({ message: "Failed to update Task" });
   }
 };
+exports.deleteTaskFile = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+
+    // Check if a file URL has been provided
+    if (!req.body.fileUrl) {
+      return res.status(400).send({ message: "No file URL provided" });
+    }
+
+    // The file URL to be removed from filePaths
+    const fileUrl = req.body.fileUrl;
+
+    // Use $pull to remove the specific file URL from filePaths array
+    const updatedDoc = {
+      $pull: {
+        filePaths: fileUrl,
+      },
+    };
+
+    const result = await taskCollection.updateOne(filter, updatedDoc);
+
+    if (result.matchedCount === 0) {
+      return res.status(404).send({ message: "Task not found" });
+    }
+
+    if (result.modifiedCount === 0) {
+      return res.status(404).send({ message: "File URL not found in task" });
+    }
+
+    return res.status(200).send({
+      message: "File deleted successfully from task",
+    });
+  } catch (error) {
+    console.error("Error deleting file from task:", error);
+    res.status(500).send({ message: "Failed to delete file from task" });
+  }
+};
 exports.updateOneTask = async (req, res) => {
   const id = req.params.id;
   const filter = { _id: new ObjectId(id) };
@@ -167,13 +205,6 @@ exports.specificTask = async (req, res) => {
   const result = await taskCollection.findOne(query);
   res.send(result);
 }
-
-exports.specificTask = async (req, res) => {
-  const id = req.params.id;
-  const query = { _id: new ObjectId(id) };
-  const result = await taskCollection.findOne(query);
-  res.send(result);
-};
 
 exports.getEmailTask = async (req, res) => {
   const email = req.params.email;
@@ -322,6 +353,6 @@ exports.updateTaskStage = async (req, res) => {
   }
 };
 
-// ID params er modddhe pass kortechen?
+
 
 
