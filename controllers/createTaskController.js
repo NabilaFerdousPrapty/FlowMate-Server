@@ -274,7 +274,7 @@ exports.getTaskCountByEmailAndStatus = async (req, res) => {
 
     // Get the count of tasks in different stages (todo, in progress, done) for this user
     const todoCount = await taskCollection.countDocuments({ email: email, stage: "todo" });
-    const inProgressCount = await taskCollection.countDocuments({ email: email, stage: "in progress" });
+    const inProgressCount = await taskCollection.countDocuments({ email: email, stage: "inProgress" });
     const doneCount = await taskCollection.countDocuments({ email: email, stage: "done" });
 
     // Construct the response object with total count and counts for each stage
