@@ -72,6 +72,21 @@ app.get('/users/admin/:email', async (req, res) => {
   }
   res.send({ admin });
 })
+//make a user admin api
+app.patch('/users/admin-toggle/:email', async (req, res) => {
+  const email = req.params.email;
+  const { role } = req.body; // Expect 'admin' or 'user' in request body
+  const query = { email: email };
+  const update = { $set: { role: role } };
+
+  try {
+    const result = await usersCollection.updateOne(query, update);
+    res.send(result);
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    res.status(500).send({ message: "Failed to update user role" });
+  }
+});
 
 
 // get users by email 
