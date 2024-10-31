@@ -6,6 +6,9 @@ const {
   updateUserProfileByEmail,
   updateFileCountByEmail,
   getFileCountByEmail,
+  blockUser,
+  unblockUser,
+  toggleUserBlockStatus,
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -13,6 +16,7 @@ const router = express.Router();
 router.post("/create", createUser);
 router.post("/login", login);
 router.get("/get", getUsers);
+router.patch("/toggleBlockUser/:email", toggleUserBlockStatus);
 router.patch("/updateProfileByEmail", updateUserProfileByEmail);
 router.put('/update-file-count/:email', updateFileCountByEmail);
 router.get('/file-count/:email', getFileCountByEmail);
