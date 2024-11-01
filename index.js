@@ -6,10 +6,11 @@ const memberRoutes = require("./routes/memberRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const userRoutes = require("./routes/userRoutes");
-const createTaskRoutes = require('./routes/createTaskRoutes');
-const createTaskBoardRoutes = require('./routes/createTaskBoardRoutes');
-const timerDataRoutes = require('./routes/timerDataRoutes');
+const createTaskRoutes = require("./routes/createTaskRoutes");
+const createTaskBoardRoutes = require("./routes/createTaskBoardRoutes");
+const timerDataRoutes = require("./routes/timerDataRoutes");
 const { ObjectId } = require("mongodb");
+const authMiddleware = require("./middlewares/authMiddleware");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,7 +25,7 @@ app.use(
       "http://localhost:5000",
       "https://flowmate-letscollaborate.web.app",
       "https://flowmate-letscollaborate.firebaseapp.com",
-      "https://flowmates.netlify.app"
+      "https://flowmates.netlify.app",
     ],
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
@@ -40,14 +41,12 @@ app.use(
 // io.on('connection', (socket) => {
 //   console.log('A user connected:', socket.id);
 
-
-
 //   socket.on('disconnect', () => {
 //     console.log('User disconnected:', socket.id);
 //   });
 // });
 
-const createTeamCollection = db.collection('teams');
+const createTeamCollection = db.collection("teams");
 const usersCollection = db.collection("Users");
 const feedbacksCollection = db.collection("feedbacks");
 const newslettersCollection = db.collection("newsletters");
@@ -62,19 +61,19 @@ app.use("/users", userRoutes);
 app.use("/createTask", createTaskRoutes);
 app.use("/createBoard", createTaskBoardRoutes);
 app.use("/timerData", timerDataRoutes);
-app.get('/users/admin/:email', async (req, res) => {
+app.get("/users/admin/:email", authMiddleware, async (req, res) => {
   const email = req.params.email;
 
   const query = { email: email };
   const user = await usersCollection.findOne(query);
   let admin = false;
   if (user) {
-    admin = user?.role === 'admin';
+    admin = user?.role === "admin";
   }
   res.send({ admin });
-})
+});
 //make a user admin api
-app.patch('/users/admin-toggle/:email', async (req, res) => {
+app.patch("/users/admin-toggle/:email", authMiddleware, async (req, res) => {
   const email = req.params.email;
   const { role } = req.body; // Expect 'admin' or 'user' in request body
   const query = { email: email };
@@ -89,21 +88,20 @@ app.patch('/users/admin-toggle/:email', async (req, res) => {
   }
 });
 
+// get users by email
 
-// get users by email 
-
-app.get('/users', async (req, res) => {
+app.get("/users", authMiddleware, async (req, res) => {
   const email = req.query.email;
   if (email) {
     const result = await usersCollection.findOne({ email: email });
     res.send(result);
   } else {
-    const result = await usersCollection.find().toArray()
+    const result = await usersCollection.find().toArray();
     res.send(result);
   }
-})
+});
 // Create a new team
-app.post('/create-team', async (req, res) => {
+app.post("/create-team", authMiddleware, async (req, res) => {
   try {
     const query = req.body;
     const result = await createTeamCollection.insertOne(query);
@@ -112,82 +110,99 @@ app.post('/create-team', async (req, res) => {
     res.status(500).send({ message: "Failed to create team", error });
   }
 });
-// pending members add on the 
-app.patch('/teams/:teamId/add-pending-member', async (req, res) => {
-  const { teamId } = req.params;
-  const { userId } = req.body;
+// pending members add on the
+app.patch(
+  "/teams/:teamId/add-pending-member",
+  authMiddleware,
+  async (req, res) => {
+    const { teamId } = req.params;
+    const { userId } = req.body;
 
-  try {
-    // Find the team by its ID
-    const team = await createTeamCollection.findOne({ _id: new ObjectId(teamId) });
+    try {
+      // Find the team by its ID
+      const team = await createTeamCollection.findOne({
+        _id: new ObjectId(teamId),
+      });
 
-    // If the team is not found, return a 404 error
-    if (!team) {
-      return res.status(404).json({ message: 'Team not found' });
+      // If the team is not found, return a 404 error
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      // Check if the userId is already in the pendingMembers array
+      if (team.pendingMembers.includes(userId)) {
+        return res
+          .status(400)
+          .json({ message: "User is already in pending members" });
+      }
+
+      // Add the userId to the pendingMembers array
+      const update = await createTeamCollection.updateOne(
+        { _id: new ObjectId(teamId) },
+        { $addToSet: { pendingMembers: userId } }
+      );
+
+      if (update.matchedCount === 0) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+
+      res.status(200).json({
+        message: "Member added to pendingMembers successfully",
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Failed to add member to pendingMembers",
+        error: error.message,
+      });
     }
-
-    // Check if the userId is already in the pendingMembers array
-    if (team.pendingMembers.includes(userId)) {
-      return res.status(400).json({ message: 'User is already in pending members' });
-    }
-
-    // Add the userId to the pendingMembers array
-    const update = await createTeamCollection.updateOne(
-      { _id: new ObjectId(teamId) },
-      { $addToSet: { pendingMembers: userId } }
-    );
-
-    if (update.matchedCount === 0) {
-      return res.status(404).json({ message: 'Team not found' });
-    }
-
-    res.status(200).json({
-      message: 'Member added to pendingMembers successfully',
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: 'Failed to add member to pendingMembers',
-      error: error.message,
-    });
   }
-});
+);
 
 // remove the member from pendingMembers and add the id on the teamMembers
 // Accept a pending member
-app.patch('/create-team/:teamId/accept-member', async (req, res) => {
-  const { teamId } = req.params;
-  const { userId } = req.body;
+app.patch(
+  "/create-team/:teamId/accept-member",
+  authMiddleware,
+  async (req, res) => {
+    const { teamId } = req.params;
+    const { userId } = req.body;
 
-  try {
-    // Find the team by its ID
-    const team = await createTeamCollection.findOne({ _id: new ObjectId(teamId) });
+    try {
+      // Find the team by its ID
+      const team = await createTeamCollection.findOne({
+        _id: new ObjectId(teamId),
+      });
 
-    if (!team) {
-      return res.status(404).json({ message: 'Team not found' });
-    }
-
-    if (!team.pendingMembers.includes(userId)) {
-      return res.status(400).json({ message: 'User is not in pending members' });
-    }
-
-    // Update the team: Remove user from pendingMembers and add to teamMembers
-    await createTeamCollection.updateOne(
-      { _id: new ObjectId(teamId) },
-      {
-        $pull: { pendingMembers: userId },
-        $addToSet: { teamMembers: userId }
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
       }
-    );
 
-    res.status(200).json({ message: 'Member accepted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to accept member', error: error.message });
+      if (!team.pendingMembers.includes(userId)) {
+        return res
+          .status(400)
+          .json({ message: "User is not in pending members" });
+      }
+
+      // Update the team: Remove user from pendingMembers and add to teamMembers
+      await createTeamCollection.updateOne(
+        { _id: new ObjectId(teamId) },
+        {
+          $pull: { pendingMembers: userId },
+          $addToSet: { teamMembers: userId },
+        }
+      );
+
+      res.status(200).json({ message: "Member accepted successfully" });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Failed to accept member", error: error.message });
+    }
   }
-});
+);
 
-//get all the teams 
-app.get('/allTeams', async (req, res) => {
+//get all the teams
+app.get("/allTeams", authMiddleware, async (req, res) => {
   try {
     const result = await createTeamCollection.find().toArray();
     res.send(result);
@@ -197,7 +212,7 @@ app.get('/allTeams', async (req, res) => {
 });
 
 // Get the team list
-app.get('/create-team', async (req, res) => {
+app.get("/create-team", authMiddleware, async (req, res) => {
   try {
     const email = req.query.email;
 
@@ -208,19 +223,20 @@ app.get('/create-team', async (req, res) => {
       res.status(400).send({ message: "Email is required" });
     }
   } catch (error) {
-    res.status(500).send({ message: "Failed to retrieve teams", error: error.message });
+    res
+      .status(500)
+      .send({ message: "Failed to retrieve teams", error: error.message });
   }
 });
 
-
 // Update team name
-app.patch('/update/:id', async (req, res) => {
+app.patch("/update/:id", authMiddleware, async (req, res) => {
   const id = req.params.id; // Get the ID from the request parameters
   const { teamName } = req.body; // Extract teamName from the request body
 
   // Ensure the ID is valid
   if (!ObjectId.isValid(id)) {
-    return res.status(400).json({ message: 'Invalid ID format' });
+    return res.status(400).json({ message: "Invalid ID format" });
   }
 
   try {
@@ -231,18 +247,18 @@ app.patch('/update/:id', async (req, res) => {
     const result = await createTeamCollection.updateOne(query, update); // Replace yourCollection with your actual collection name
 
     if (result.modifiedCount > 0) {
-      res.status(200).json({ message: 'Team name updated successfully' });
+      res.status(200).json({ message: "Team name updated successfully" });
     } else {
-      res.status(404).json({ message: 'Team not found or no changes made' });
+      res.status(404).json({ message: "Team not found or no changes made" });
     }
   } catch (error) {
-    console.error('Error updating team name:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error updating team name:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 // delete the teamId from the teams
 
-app.delete('/delete/:teamId/:memberId', async (req, res) => {
+app.delete("/delete/:teamId/:memberId", authMiddleware, async (req, res) => {
   const { teamId, memberId } = req.params; // Destructure teamId and memberId from the request parameters
 
   try {
@@ -256,7 +272,9 @@ app.delete('/delete/:teamId/:memberId', async (req, res) => {
     if (result.modifiedCount > 0) {
       res.status(200).json({ message: "Member removed successfully" });
     } else {
-      res.status(404).json({ message: "Team not found or member not found in the team" });
+      res
+        .status(404)
+        .json({ message: "Team not found or member not found in the team" });
     }
   } catch (error) {
     console.error(error);
@@ -272,7 +290,9 @@ app.post("/newsletter", async (req, res) => {
     // Check if the email already exists
     const existingSubscriber = await newslettersCollection.findOne({ email });
     if (existingSubscriber) {
-      return res.send({ message: "You have already been subscribed to our newsletter" });
+      return res.send({
+        message: "You have already been subscribed to our newsletter",
+      });
     }
 
     // Insert new subscriber
@@ -287,7 +307,6 @@ app.post("/newsletter", async (req, res) => {
     res.status(500).send({ message: "Internal server error" });
   }
 });
-
 
 app.get("/newsletters", async (req, res) => {
   try {
@@ -311,9 +330,8 @@ app.get("/newsletters", async (req, res) => {
   }
 });
 
-
 // Delete a team by team admin
-app.delete('/create-team/:id', async (req, res) => {
+app.delete("/create-team/:id", authMiddleware, async (req, res) => {
   try {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
@@ -328,7 +346,7 @@ app.delete('/create-team/:id', async (req, res) => {
 });
 
 // Get team roles
-app.get('/create-team/role/:role', async (req, res) => {
+app.get("/create-team/role/:role", authMiddleware, async (req, res) => {
   try {
     const role = req.params.role;
     const email = req.query.email;
@@ -344,26 +362,26 @@ app.get('/create-team/role/:role', async (req, res) => {
 });
 
 // Get team data by team name
-app.get('/team/:teamName', async (req, res) => {
+app.get("/team/:teamName", authMiddleware, async (req, res) => {
   try {
     const teamName = req.params.teamName;
     const result = await createTeamCollection.findOne({ teamName });
     if (result) {
       res.send(result);
     } else {
-      res.status(404).send({ message: 'Team not found' });
+      res.status(404).send({ message: "Team not found" });
     }
   } catch (error) {
     res.status(500).send({ message: "Failed to retrieve team", error });
   }
 });
 // Search users for adding team members
-app.get('/search', async (req, res) => {
+app.get("/search", authMiddleware, async (req, res) => {
   try {
     const name = req.query.name;
     if (name) {
       const result = await usersCollection.findOne({
-        name: { $regex: new RegExp(name, 'i') }
+        name: { $regex: new RegExp(name, "i") },
       });
       res.send(result);
     } else {
@@ -374,10 +392,8 @@ app.get('/search', async (req, res) => {
   }
 });
 
-
-
 // Get team members by email
-app.get('/members', async (req, res) => {
+app.get("/members", authMiddleware, async (req, res) => {
   try {
     const teamName = req.query.teamName;
     if (teamName) {
@@ -392,20 +408,21 @@ app.get('/members', async (req, res) => {
 });
 
 // Delete members from team
-app.delete('/members/:teamId/:memberId', async (req, res) => {
+app.delete("/members/:teamId/:memberId", authMiddleware, async (req, res) => {
   const { teamId, memberId } = req.params;
 
   try {
     const query = { _id: new ObjectId(teamId) };
 
     // Remove the member from the team by _id
-    const result = await createTeamCollection.updateOne(
-      query,
-      { $pull: { members: { _id: memberId } } }
-    );
+    const result = await createTeamCollection.updateOne(query, {
+      $pull: { members: { _id: memberId } },
+    });
 
     if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: "Member not found or team does not exist" });
+      return res
+        .status(404)
+        .json({ message: "Member not found or team does not exist" });
     }
 
     res.status(200).json({ message: "Member deleted successfully" });
@@ -414,7 +431,7 @@ app.delete('/members/:teamId/:memberId', async (req, res) => {
   }
 });
 // Get all teams members
-app.get('/teams', async (req, res) => {
+app.get("/teams", authMiddleware, async (req, res) => {
   try {
     const result = await createTeamCollection.find().toArray();
     res.send(result);
@@ -422,7 +439,8 @@ app.get('/teams', async (req, res) => {
     res.status(500).send({ message: "Failed to retrieve teams", error });
   }
 });
-app.get('/feedbacks', async (req, res) => {
+
+app.get("/feedbacks", async (req, res) => {
   try {
     const result = await feedbacksCollection.find().toArray();
     res.send(result);
@@ -432,7 +450,7 @@ app.get('/feedbacks', async (req, res) => {
 });
 // edit the team description
 
-app.put('/teams/:id', async (req, res) => {
+app.put("/teams/:id", authMiddleware, async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const { teamName, teamDescription } = req.body;
@@ -449,18 +467,19 @@ app.put('/teams/:id', async (req, res) => {
       const result = await createTeamCollection.updateOne(query, update);
 
       if (result.modifiedCount > 0) {
-        res.status(200).json({ message: 'Team updated successfully' });
+        res.status(200).json({ message: "Team updated successfully" });
       } else {
-        res.status(404).json({ message: 'Team not found or no changes made' });
+        res.status(404).json({ message: "Team not found or no changes made" });
       }
     } catch (error) {
-      res.status(500).json({ message: 'Error updating team', error });
+      res.status(500).json({ message: "Error updating team", error });
     }
   } else {
-    res.status(400).json({ message: 'teamName and teamDescription are required' });
+    res
+      .status(400)
+      .json({ message: "teamName and teamDescription are required" });
   }
 });
-
 
 app.post("/feedback", async (req, res) => {
   try {
@@ -499,17 +518,14 @@ app.post("/feedback", async (req, res) => {
 app.get("/feedbacks", async (req, res) => {
   try {
     const result = await feedbacksCollection.find().toArray();
-    res.send(result
-    );
+    res.send(result);
   } catch (error) {
     console.error("Error fetching feedbacks:", error);
     res.status(500).send({ message: "Internal server error" });
   }
 });
 
-
-
-app.get('/team-requests', async (req, res) => {
+app.get("/team-requests", authMiddleware, async (req, res) => {
   const { email } = req.query;
 
   if (!email) {
@@ -517,47 +533,55 @@ app.get('/team-requests', async (req, res) => {
   }
 
   try {
-    const teamRequests = await createTeamCollection.find({
-      "members.email": email,
-      "members.status": "pending"
-    }).toArray();
+    const teamRequests = await createTeamCollection
+      .find({
+        "members.email": email,
+        "members.status": "pending",
+      })
+      .toArray();
 
     res.status(200).json(teamRequests);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching team requests', error });
+    res.status(500).json({ message: "Error fetching team requests", error });
   }
 });
 
-app.post('/team-requests/accept', async (req, res) => {
+app.post("/team-requests/accept", authMiddleware, async (req, res) => {
   const { teamId, userEmail } = req.body;
 
   if (!teamId || !userEmail) {
-    return res.status(400).json({ message: "Team ID and user email are required" });
+    return res
+      .status(400)
+      .json({ message: "Team ID and user email are required" });
   }
 
   try {
     const result = await createTeamCollection.updateOne(
-      { _id: new ObjectId(teamId), "members.email": userEmail, "members.status": "pending" },
+      {
+        _id: new ObjectId(teamId),
+        "members.email": userEmail,
+        "members.status": "pending",
+      },
       { $set: { "members.$.status": "accepted" } }
     );
 
     if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: "Team request not found or already processed" });
+      return res
+        .status(404)
+        .json({ message: "Team request not found or already processed" });
     }
 
     res.status(200).json({ message: "Team request accepted" });
   } catch (error) {
-    res.status(500).json({ message: 'Error accepting team request', error });
+    res.status(500).json({ message: "Error accepting team request", error });
   }
 });
 connectDB();
 
 app.listen(port, () => {
   console.log(`Server is running all time ${port}`);
-
 });
 
 app.get("/", (req, res) => {
   res.send("Welcome to FlowMate API and thank you users");
-}
-);
+});
