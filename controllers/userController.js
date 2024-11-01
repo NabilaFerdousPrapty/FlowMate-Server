@@ -1,5 +1,7 @@
+const { ObjectId } = require('mongodb');
 const usersCollection = require("../models/userModel");
-
+const { connectDB, db } = require("../utils/db");
+const teamsCollection = db.collection('teams');
 const Users = require("../models/userModel");
 const bycrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -33,6 +35,43 @@ exports.createUser = async (req, res) => {
     res.status(500).send({ message: "Failed to create user" });
   }
 };
+exports.getUsersByTeam = async (req, res) => {
+  try {
+    // Extract team name from request parameters
+    const { teamName } = req.params; // Assuming team name is passed as a URL parameter
+
+    // Fetch team details based on the team name
+    const team = await teamsCollection.findOne({ teamName: teamName });
+
+    // Check if team exists
+    if (!team) {
+      return res.status(404).send({ message: "Team not found." });
+    }
+
+    // Get the teamMembers IDs
+    const { teamMembers } = team;
+    console.log(teamMembers);
+
+
+
+    // Filter for active users in the specified team members
+    const filter = { _id: { $in: teamMembers.map(id => new ObjectId(id)) }, status: 'active' };
+    console.log(filter);
+    // Adjust the filter to match the user schema
+    const result = await usersCollection.find(filter).toArray();
+
+    // Check if any users are found
+    if (result.length === 0) {
+      return res.status(404).send({ message: "No active users found for this team." });
+    }
+
+    res.send(result);
+  } catch (error) {
+    console.error("Error fetching users by team:", error);
+    res.status(500).send({ message: "Failed to fetch users" });
+  }
+};
+
 
 exports.login = async (req, res) => {
   try {
