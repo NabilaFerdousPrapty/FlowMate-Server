@@ -24,6 +24,7 @@ app.use(
       "http://localhost:5000",
       "https://flowmate-letscollaborate.web.app",
       "https://flowmate-letscollaborate.firebaseapp.com",
+      "https://flowmates.netlify.app"
     ],
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
     methods: ["GET", "POST", "DELETE", "PUT", "PATCH"],
