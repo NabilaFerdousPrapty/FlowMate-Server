@@ -1,19 +1,20 @@
 const express = require("express");
 const {
-  createPaymentIntent, 
+  createPaymentIntent,
   createPayment,
   getPayments,
 } = require("../controllers/paymentController");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
 // Create payment intent
-router.post("/create-payment-intent", createPaymentIntent);
+router.post("/create-payment-intent", authMiddleware, createPaymentIntent);
 
 // Process payment
-router.post("/payment", createPayment);
+router.post("/payment", authMiddleware, createPayment);
 
 // Get payment history
-router.get("/payment", getPayments);
+router.get("/payment", authMiddleware, getPayments);
 
 module.exports = router;
