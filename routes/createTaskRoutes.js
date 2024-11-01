@@ -1,32 +1,43 @@
 const express = require("express");
 
-
-const { createTask, getTask, updateTask, deleteTask, specificTask, updateOneTask, getEmailTask, updateTaskFile, getTaskByTeam, getTaskStatusCounts, getTaskCountByEmailAndStatus, getTaskStageByTeamName, getTasksByStage, updateTaskStage, deleteTaskFile } = require("../controllers/createTaskController");
-
+const {
+  createTask,
+  getTask,
+  updateTask,
+  deleteTask,
+  specificTask,
+  updateOneTask,
+  getEmailTask,
+  updateTaskFile,
+  getTaskByTeam,
+  getTaskStatusCounts,
+  getTaskCountByEmailAndStatus,
+  getTaskStageByTeamName,
+  getTasksByStage,
+  updateTaskStage,
+  deleteTaskFile,
+} = require("../controllers/createTaskController");
 
 const router = express.Router();
-
-
-
 const upload = require("../middlewares/multer");
-router.post("/", createTask);
-router.get("/", getTask);
-router.get("/:id", specificTask);
-router.get("/:email", getEmailTask);
-router.get("/teamName/:teamName", getTaskByTeam);
-router.get("/status", getTaskStatusCounts);
-router.get('/task-count/:email', getTaskCountByEmailAndStatus);
-router.get("/tasksByStage/:teamName/:stage", getTasksByStage);
+const authMiddleware = require("../middlewares/authMiddleware");
 
-router.delete("/:id", deleteTask);
-router.put("/file/:id", updateTaskFile);
-router.delete("/file/:id", deleteTaskFile);
+router.post("/", authMiddleware, createTask);
+router.get("/", authMiddleware, getTask);
+router.get("/:id", authMiddleware, specificTask);
+router.get("/:email", authMiddleware, getEmailTask);
+router.get("/teamName/:teamName", authMiddleware, getTaskByTeam);
+router.get("/status", authMiddleware, getTaskStatusCounts);
+router.get("/task-count/:email", authMiddleware, getTaskCountByEmailAndStatus);
+router.get("/tasksByStage/:teamName/:stage", authMiddleware, getTasksByStage);
 
+router.delete("/:id", authMiddleware, deleteTask);
+router.put("/file/:id", authMiddleware, updateTaskFile);
+router.delete("/file/:id", authMiddleware, deleteTaskFile);
 
-router.put("/:id", updateOneTask);
-router.patch("/:id", updateTask);
-router.put("/updateStage/:taskId", updateTaskStage);
-
+router.put("/:id", authMiddleware, updateOneTask);
+router.patch("/:id", authMiddleware, updateTask);
+router.put("/updateStage/:taskId", authMiddleware, updateTaskStage);
 
 module.exports = router;
 

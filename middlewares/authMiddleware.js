@@ -1,20 +1,30 @@
 const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  try {
+    const authHeader = req.headers.authorization;
+    const token =
+      authHeader && authHeader.startsWith("Bearer ")
+        ? authHeader.split(" ")[1]
+        : null;
 
-  if (!token) {
-    return res.status(401).send({ message: "Unauthorized access" });
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(403).send({ message: "Invalid token" });
+    if (!token) {
+      return res.status(401).json({ message: "Unauthorized access" });
     }
 
-    req.user = decoded;
-    next();
-  });
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(403).json({ message: "Invalid token" });
+      }
+
+      req.user = decoded;
+      next();
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "An error occurred during authentication" });
+  }
 };
 
 module.exports = authMiddleware;
