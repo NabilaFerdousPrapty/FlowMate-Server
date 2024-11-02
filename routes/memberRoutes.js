@@ -9,12 +9,12 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 // Create a new member
-router.post("/create-member", authMiddleware, createMember);
+router.post("/create-member", createMember);
 
 // Get all members
-router.get("/members", authMiddleware, getMembers);
+router.get("/members", getMembers);
 
 // Delete a member
-router.delete("/member/:id", authMiddleware, deleteMember);
+router.delete("/member/:id", deleteMember);
 
 module.exports = router;

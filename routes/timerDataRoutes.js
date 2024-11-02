@@ -9,10 +9,10 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
-router.post("/", authMiddleware, createTimer);
-router.get("/", authMiddleware, getTimer);
-router.get("/:id", authMiddleware, specificTimer);
-router.get("/:email", authMiddleware, getEmailTimer);
+router.post("/", createTimer);
+router.get("/", getTimer);
+router.get("/:id", specificTimer);
+router.get("/:email", getEmailTimer);
 
 module.exports = router;
 
