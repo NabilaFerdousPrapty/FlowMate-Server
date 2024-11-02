@@ -1,5 +1,10 @@
 const express = require("express");
-const { createMember, getMembers, deleteMember } = require("../controllers/memberController");
+const {
+  createMember,
+  getMembers,
+  deleteMember,
+} = require("../controllers/memberController");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
