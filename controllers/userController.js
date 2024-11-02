@@ -1,35 +1,54 @@
-const { ObjectId } = require('mongodb');
+const { ObjectId } = require("mongodb");
 const usersCollection = require("../models/userModel");
 const { connectDB, db } = require("../utils/db");
-const teamsCollection = db.collection('teams');
+const teamsCollection = db.collection("teams");
 const Users = require("../models/userModel");
-const bycrypt = require("bcryptjs");
+const bcrypt = require("bcryptjs"); // Add this line
 const jwt = require("jsonwebtoken");
 
 exports.createUser = async (req, res) => {
   try {
     const { name, email, password, role, status, photo, teamName } = req.body;
-    // console.log(req.body);
 
-    const isExiting = await usersCollection.findOne({ email });
+    // Check if the user already exists
+    const existingUser = await usersCollection.findOne({ email });
 
-    if (isExiting) {
-      return res.send({ message: "User already exists" });
+    if (existingUser) {
+      return res.status(409).json({ message: "User already exists" }); // 409 Conflict
     }
 
-    const hasedPassword = await bycrypt.hash(password, 10);
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10); // Correct the spelling of bcrypt
 
+    // Create the new user
     const result = await usersCollection.insertOne({
       name,
       email,
-      password: hasedPassword,
+      password: hashedPassword,
       role,
       status,
       photo,
-      teamName
+      teamName,
     });
 
-    res.send(result);
+    // Create a token using the new user's ID from the result
+    const token = jwt.sign(
+      { id: result._id, email: result.email }, // Use result.insertedId to get the new user's ID
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h", // Token expiration time
+      }
+    );
+
+    result.token = token;
+    result.password = null;
+
+    console.log("Token created:", token);
+
+    // Send back the token and result
+    res
+      .status(201)
+      .json({ token, user: { name, email, role, status, photo, teamName } }); // Send user info too
   } catch (error) {
     console.error("Error creating user:", error);
     res.status(500).send({ message: "Failed to create user" });
@@ -52,17 +71,20 @@ exports.getUsersByTeam = async (req, res) => {
     const { teamMembers } = team;
     console.log(teamMembers);
 
-
-
     // Filter for active users in the specified team members
-    const filter = { _id: { $in: teamMembers.map(id => new ObjectId(id)) }, status: 'active' };
+    const filter = {
+      _id: { $in: teamMembers.map((id) => new ObjectId(id)) },
+      status: "active",
+    };
     console.log(filter);
     // Adjust the filter to match the user schema
     const result = await usersCollection.find(filter).toArray();
 
     // Check if any users are found
     if (result.length === 0) {
-      return res.status(404).send({ message: "No active users found for this team." });
+      return res
+        .status(404)
+        .send({ message: "No active users found for this team." });
     }
 
     res.send(result);
@@ -71,7 +93,6 @@ exports.getUsersByTeam = async (req, res) => {
     res.status(500).send({ message: "Failed to fetch users" });
   }
 };
-
 
 exports.login = async (req, res) => {
   try {
@@ -83,20 +104,31 @@ exports.login = async (req, res) => {
       return res.status(401).send({ message: "User not found" });
     }
 
-    const isMatch = await bycrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).send({ message: "Invalid email or password" });
     }
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: user._id, email: user.email },
       process.env.JWT_SECRET,
       {
         expiresIn: "1h",
       }
     );
+    user.token = token;
+    user.password = null;
 
-    res.status(200).send({ message: "Login successful", token });
+    const options = {
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+    };
+
+    res.status(200).cookie("token", token, options).json({
+      message: "User created successfully",
+      user,
+      token,
+    });
   } catch (error) {
     console.error("Error fetching users:", error);
     res.status(500).send({ message: "Failed to fetch users" });
@@ -105,7 +137,7 @@ exports.login = async (req, res) => {
 
 exports.getUsers = async (req, res) => {
   try {
-    const filter = { status: 'active' }
+    const filter = { status: "active" };
     const result = await usersCollection.find(filter).toArray();
     res.send(result);
   } catch (error) {
@@ -122,8 +154,10 @@ exports.toggleUserBlockStatus = async (req, res) => {
     if (!email) {
       return res.status(400).send({ message: "User email is required" });
     }
-    if (!status || (status !== 'blocked' && status !== 'active')) {
-      return res.status(400).send({ message: "Valid status ('blocked' or 'active') is required" });
+    if (!status || (status !== "blocked" && status !== "active")) {
+      return res
+        .status(400)
+        .send({ message: "Valid status ('blocked' or 'active') is required" });
     }
 
     const updatedUser = await Users.findOneAndUpdate(
@@ -136,13 +170,14 @@ exports.toggleUserBlockStatus = async (req, res) => {
       return res.status(404).send({ message: "User not found" });
     }
 
-    res.status(200).send({ message: `User ${status} successfully`, user: updatedUser });
+    res
+      .status(200)
+      .send({ message: `User ${status} successfully`, user: updatedUser });
   } catch (error) {
     console.error("Error updating user status:", error);
     res.status(500).send({ message: "Failed to update user status" });
   }
 };
-
 
 exports.updateUserProfileByEmail = async (req, res) => {
   try {
@@ -163,7 +198,9 @@ exports.updateUserProfileByEmail = async (req, res) => {
       return res.status(404).send({ message: "User not found" });
     }
 
-    res.status(200).send({ message: "Profile updated successfully", user: updatedUser });
+    res
+      .status(200)
+      .send({ message: "Profile updated successfully", user: updatedUser });
   } catch (error) {
     console.error("Error updating user profile:", error);
     res.status(500).send({ message: "Failed to update user profile" });
@@ -190,7 +227,9 @@ exports.updateFileCountByEmail = async (req, res) => {
       return res.status(404).send({ message: "User not found" });
     }
 
-    res.status(200).send({ message: "File count updated successfully", user: updatedUser });
+    res
+      .status(200)
+      .send({ message: "File count updated successfully", user: updatedUser });
   } catch (error) {
     console.error("Error updating file count:", error);
     res.status(500).send({ message: "Failed to update file count" });
@@ -206,17 +245,17 @@ exports.getFileCountByEmail = async (req, res) => {
       return res.status(400).send({ message: "Email is required" });
     }
 
-
     const user = await usersCollection.findOne({ email: email });
 
     if (!user) {
       return res.status(404).send({ message: "User not found" });
     }
 
-
     const fileCount = user.fileCount || 0;
 
-    res.status(200).send({ message: "File count fetched successfully", fileCount });
+    res
+      .status(200)
+      .send({ message: "File count fetched successfully", fileCount });
   } catch (error) {
     console.error("Error fetching file count:", error);
     res.status(500).send({ message: "Failed to fetch file count" });

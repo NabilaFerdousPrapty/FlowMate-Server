@@ -9,12 +9,12 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const router = express.Router();
 
 // Create payment intent
-router.post("/create-payment-intent", authMiddleware, createPaymentIntent);
+router.post("/create-payment-intent", createPaymentIntent);
 
 // Process payment
-router.post("/payment", authMiddleware, createPayment);
+router.post("/payment", createPayment);
 
 // Get payment history
-router.get("/payment", authMiddleware, getPayments);
+router.get("/payment", getPayments);
 
 module.exports = router;

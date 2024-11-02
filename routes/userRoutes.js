@@ -16,12 +16,12 @@ const router = express.Router();
 router.post("/create", createUser);
 router.post("/login", login);
 
-router.get("/get", authMiddleware, getUsers);
-router.get("/team/:teamName", authMiddleware, getUsersByTeam);
-router.patch("/toggleBlockUser/:email", authMiddleware, toggleUserBlockStatus);
-router.patch("/updateProfileByEmail", authMiddleware, updateUserProfileByEmail);
-router.put("/update-file-count/:email", authMiddleware, updateFileCountByEmail);
-router.get("/file-count/:email", authMiddleware, getFileCountByEmail);
+router.get("/get", getUsers);
+router.get("/team/:teamName", getUsersByTeam);
+router.patch("/toggleBlockUser/:email", toggleUserBlockStatus);
+router.patch("/updateProfileByEmail", updateUserProfileByEmail);
+router.put("/update-file-count/:email", updateFileCountByEmail);
+router.get("/file-count/:email", getFileCountByEmail);
 
 module.exports = router;
 // Hello there

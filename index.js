@@ -61,7 +61,7 @@ app.use("/users", userRoutes);
 app.use("/createTask", createTaskRoutes);
 app.use("/createBoard", createTaskBoardRoutes);
 app.use("/timerData", timerDataRoutes);
-app.get("/users/admin/:email", authMiddleware, async (req, res) => {
+app.get("/users/admin/:email", async (req, res) => {
   const email = req.params.email;
 
   const query = { email: email };
@@ -73,7 +73,7 @@ app.get("/users/admin/:email", authMiddleware, async (req, res) => {
   res.send({ admin });
 });
 //make a user admin api
-app.patch("/users/admin-toggle/:email", authMiddleware, async (req, res) => {
+app.patch("/users/admin-toggle/:email", async (req, res) => {
   const email = req.params.email;
   const { role } = req.body; // Expect 'admin' or 'user' in request body
   const query = { email: email };
@@ -90,7 +90,7 @@ app.patch("/users/admin-toggle/:email", authMiddleware, async (req, res) => {
 
 // get users by email
 
-app.get("/users", authMiddleware, async (req, res) => {
+app.get("/users", async (req, res) => {
   const email = req.query.email;
   if (email) {
     const result = await usersCollection.findOne({ email: email });
@@ -101,7 +101,7 @@ app.get("/users", authMiddleware, async (req, res) => {
   }
 });
 // Create a new team
-app.post("/create-team", authMiddleware, async (req, res) => {
+app.post("/create-team", async (req, res) => {
   try {
     const query = req.body;
     const result = await createTeamCollection.insertOne(query);
@@ -113,7 +113,7 @@ app.post("/create-team", authMiddleware, async (req, res) => {
 // pending members add on the
 app.patch(
   "/teams/:teamId/add-pending-member",
-  authMiddleware,
+
   async (req, res) => {
     const { teamId } = req.params;
     const { userId } = req.body;
@@ -162,7 +162,7 @@ app.patch(
 // Accept a pending member
 app.patch(
   "/create-team/:teamId/accept-member",
-  authMiddleware,
+
   async (req, res) => {
     const { teamId } = req.params;
     const { userId } = req.body;
@@ -202,7 +202,7 @@ app.patch(
 );
 
 //get all the teams
-app.get("/allTeams", authMiddleware, async (req, res) => {
+app.get("/allTeams", async (req, res) => {
   try {
     const result = await createTeamCollection.find().toArray();
     res.send(result);
@@ -212,7 +212,7 @@ app.get("/allTeams", authMiddleware, async (req, res) => {
 });
 
 // Get the team list
-app.get("/create-team", authMiddleware, async (req, res) => {
+app.get("/create-team", async (req, res) => {
   try {
     const email = req.query.email;
 
@@ -230,7 +230,7 @@ app.get("/create-team", authMiddleware, async (req, res) => {
 });
 
 // Update team name
-app.patch("/update/:id", authMiddleware, async (req, res) => {
+app.patch("/update/:id", async (req, res) => {
   const id = req.params.id; // Get the ID from the request parameters
   const { teamName } = req.body; // Extract teamName from the request body
 
@@ -258,7 +258,7 @@ app.patch("/update/:id", authMiddleware, async (req, res) => {
 });
 // delete the teamId from the teams
 
-app.delete("/delete/:teamId/:memberId", authMiddleware, async (req, res) => {
+app.delete("/delete/:teamId/:memberId", async (req, res) => {
   const { teamId, memberId } = req.params; // Destructure teamId and memberId from the request parameters
 
   try {
@@ -331,7 +331,7 @@ app.get("/newsletters", async (req, res) => {
 });
 
 // Delete a team by team admin
-app.delete("/create-team/:id", authMiddleware, async (req, res) => {
+app.delete("/create-team/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
@@ -346,7 +346,7 @@ app.delete("/create-team/:id", authMiddleware, async (req, res) => {
 });
 
 // Get team roles
-app.get("/create-team/role/:role", authMiddleware, async (req, res) => {
+app.get("/create-team/role/:role", async (req, res) => {
   try {
     const role = req.params.role;
     const email = req.query.email;
@@ -362,7 +362,7 @@ app.get("/create-team/role/:role", authMiddleware, async (req, res) => {
 });
 
 // Get team data by team name
-app.get("/team/:teamName", authMiddleware, async (req, res) => {
+app.get("/team/:teamName", async (req, res) => {
   try {
     const teamName = req.params.teamName;
     const result = await createTeamCollection.findOne({ teamName });
@@ -376,7 +376,7 @@ app.get("/team/:teamName", authMiddleware, async (req, res) => {
   }
 });
 // Search users for adding team members
-app.get("/search", authMiddleware, async (req, res) => {
+app.get("/search", async (req, res) => {
   try {
     const name = req.query.name;
     if (name) {
@@ -393,7 +393,7 @@ app.get("/search", authMiddleware, async (req, res) => {
 });
 
 // Get team members by email
-app.get("/members", authMiddleware, async (req, res) => {
+app.get("/members", async (req, res) => {
   try {
     const teamName = req.query.teamName;
     if (teamName) {
@@ -408,7 +408,7 @@ app.get("/members", authMiddleware, async (req, res) => {
 });
 
 // Delete members from team
-app.delete("/members/:teamId/:memberId", authMiddleware, async (req, res) => {
+app.delete("/members/:teamId/:memberId", async (req, res) => {
   const { teamId, memberId } = req.params;
 
   try {
@@ -431,7 +431,7 @@ app.delete("/members/:teamId/:memberId", authMiddleware, async (req, res) => {
   }
 });
 // Get all teams members
-app.get("/teams", authMiddleware, async (req, res) => {
+app.get("/teams", async (req, res) => {
   try {
     const result = await createTeamCollection.find().toArray();
     res.send(result);
@@ -450,7 +450,7 @@ app.get("/feedbacks", async (req, res) => {
 });
 // edit the team description
 
-app.put("/teams/:id", authMiddleware, async (req, res) => {
+app.put("/teams/:id", async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) };
   const { teamName, teamDescription } = req.body;
@@ -525,7 +525,7 @@ app.get("/feedbacks", async (req, res) => {
   }
 });
 
-app.get("/team-requests", authMiddleware, async (req, res) => {
+app.get("/team-requests", async (req, res) => {
   const { email } = req.query;
 
   if (!email) {
@@ -546,7 +546,7 @@ app.get("/team-requests", authMiddleware, async (req, res) => {
   }
 });
 
-app.post("/team-requests/accept", authMiddleware, async (req, res) => {
+app.post("/team-requests/accept", async (req, res) => {
   const { teamId, userEmail } = req.body;
 
   if (!teamId || !userEmail) {
