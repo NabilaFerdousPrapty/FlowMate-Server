@@ -2,6 +2,7 @@ const { ObjectId } = require("mongodb");
 const usersCollection = require("../models/userModel");
 const { connectDB, db } = require("../utils/db");
 const teamsCollection = db.collection("teams");
+
 const Users = require("../models/userModel");
 const bcrypt = require("bcryptjs"); // Add this line
 const jwt = require("jsonwebtoken");

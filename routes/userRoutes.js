@@ -7,7 +7,6 @@ const {
   updateFileCountByEmail,
   getFileCountByEmail,
   toggleUserBlockStatus,
-  getUsersByTeam,
 } = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
